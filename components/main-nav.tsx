@@ -1,12 +1,23 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { useSession } from "@/hooks/use-session"
 import { cn } from "@/lib/utils"
 import { CalendarIcon, ArchiveIcon, BookOpenIcon } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { Button } from "@/components/ui/button"
+import { signOut } from "@/lib/auth"
 
 export function MainNav() {
   const pathname = usePathname()
+  const router = useRouter()
+  const session = useSession()
+
+  const handleSignOut = async () => {
+    await signOut(supabase)
+    router.push("/login")
+  }
 
   const navItems = [
     {
@@ -46,6 +57,17 @@ export function MainNav() {
             <span>{item.name}</span>
           </Link>
         ))}
+      </div>
+      <div className="ml-auto">
+        {session ? (
+          <Button variant="ghost" size="sm" onClick={handleSignOut}>
+            Sign Out
+          </Button>
+        ) : (
+          <Link href="/login" className="text-sm hover:underline">
+            Sign In
+          </Link>
+        )}
       </div>
     </nav>
   )

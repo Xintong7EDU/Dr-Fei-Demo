@@ -20,10 +20,10 @@ export function MeetingList({ meetings, emptyMessage }: MeetingListProps) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-fade-in">
       {meetings.map((meeting) => (
-        <Link key={meeting.meeting_id} href={`/meetings/${meeting.meeting_id}`}>
-          <Card className="h-full transition-all hover:shadow-md">
+        <Link key={meeting.meeting_id} href={`/meetings/${meeting.meeting_id}`}> 
+          <Card className="h-full transition-transform hover:scale-[1.02] hover:shadow-md animate-fade-in-up">
             <CardHeader>
               <CardTitle className="line-clamp-1">{meeting.topic_overview}</CardTitle>
               <CardDescription>
