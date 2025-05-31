@@ -39,6 +39,11 @@ export function MainNav() {
       icon: CalendarIcon,
     },
     {
+      name: "Schedule",
+      href: "/schedule",
+      icon: CalendarIcon,
+    },
+    {
       name: "Archive",
       href: "/archive",
       icon: ArchiveIcon,
