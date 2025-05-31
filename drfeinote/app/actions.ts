@@ -1,6 +1,9 @@
 "use server"
 
 import type { Meeting, MeetingNote, QnAEntry } from "@/lib/types"
+import { supabaseServer } from "@/lib/supabase-server"
+import { MeetingsService } from "@/lib/meetings"
+import { MeetingNotesService } from "@/lib/meeting-notes"
 
 // Mock data for development
 const mockMeetings: Meeting[] = [
@@ -73,44 +76,30 @@ const mockQnA: QnAEntry[] = [
 ]
 
 // API functions
-export async function getMeetings(status: "upcoming" | "past"): Promise<Meeting[]> {
-  // In a real app, this would be an API call
-  const today = new Date().toISOString().split("T")[0]
+const meetingsSvc = new MeetingsService(supabaseServer)
+const notesSvc = new MeetingNotesService(supabaseServer)
 
+export async function getMeetings(status: "upcoming" | "past"): Promise<Meeting[]> {
   if (status === "upcoming") {
-    return mockMeetings.filter((meeting) => meeting.meeting_date >= today)
-  } else {
-    return mockMeetings.filter((meeting) => meeting.meeting_date < today)
+    return meetingsSvc.getUpcoming()
   }
+  return meetingsSvc.getPast()
 }
 
 export async function getMeeting(id: number): Promise<Meeting | undefined> {
-  // In a real app, this would be an API call
-  return mockMeetings.find((meeting) => meeting.meeting_id === id)
+  return (await meetingsSvc.getById(id)) ?? undefined
 }
 
 export async function getMeetingNotes(meetingId: number): Promise<MeetingNote | undefined> {
-  // In a real app, this would be an API call
-  return mockNotes.find((note) => note.meeting_id === meetingId)
+  return (await notesSvc.getByMeetingId(meetingId)) ?? undefined
 }
 
 export async function saveNotes(meetingId: number, content: string): Promise<MeetingNote> {
-  // In a real app, this would be an API call
-  const existingNote = mockNotes.find((note) => note.meeting_id === meetingId)
-
-  if (existingNote) {
-    existingNote.note_content = content
-    return existingNote
+  const existing = await notesSvc.getByMeetingId(meetingId)
+  if (existing) {
+    return notesSvc.update(existing.note_id, content)
   }
-
-  const newNote: MeetingNote = {
-    note_id: mockNotes.length + 1,
-    meeting_id: meetingId,
-    note_content: content,
-  }
-
-  mockNotes.push(newNote)
-  return newNote
+  return notesSvc.create(meetingId, content)
 }
 
 export async function getQnAForMeeting(meetingId: number): Promise<QnAEntry[]> {

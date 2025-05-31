@@ -5,26 +5,17 @@ import { MeetingList } from "@/components/meeting-list"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusIcon, BookOpenIcon, ArchiveIcon } from "lucide-react"
 import Link from "next/link"
-
-// Mock data for demonstration - in a real app this would come from a database
-const recentMeetings = [
-  {
-    meeting_id: 1,
-    topic_overview: "Weekly Research Review",
-    meeting_date: "2024-01-15",
-    start_time: "14:00:00",
-    end_time: "15:30:00"
-  },
-  {
-    meeting_id: 2, 
-    topic_overview: "Project Planning Session",
-    meeting_date: "2024-01-12",
-    start_time: "10:00:00",
-    end_time: "11:00:00"
-  }
-]
+import { useEffect, useState } from "react"
+import { getMeetings } from "./actions"
+import type { Meeting } from "@/lib/types"
 
 export default function Home() {
+  const [recentMeetings, setRecentMeetings] = useState<Meeting[]>([])
+
+  useEffect(() => {
+    getMeetings('upcoming').then(setRecentMeetings).catch(console.error)
+  }, [])
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header with Navigation */}
