@@ -1,30 +1,13 @@
-"use client"
-
 import { MainNav } from "@/components/main-nav"
 import { MeetingList } from "@/components/meeting-list"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusIcon, BookOpenIcon, ArchiveIcon } from "lucide-react"
 import Link from "next/link"
+import { getRecentMeetings } from "./actions"
 
-// Mock data for demonstration - in a real app this would come from a database
-const recentMeetings = [
-  {
-    meeting_id: 1,
-    topic_overview: "Weekly Research Review",
-    meeting_date: "2024-01-15",
-    start_time: "14:00:00",
-    end_time: "15:30:00"
-  },
-  {
-    meeting_id: 2, 
-    topic_overview: "Project Planning Session",
-    meeting_date: "2024-01-12",
-    start_time: "10:00:00",
-    end_time: "11:00:00"
-  }
-]
+export default async function Home() {
+  const recentMeetings = await getRecentMeetings()
 
-export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header with Navigation */}
@@ -38,9 +21,7 @@ export default function Home() {
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
-            Welcome to Dr. Fei Note
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome to Dr. Fei Note</h1>
           <p className="text-muted-foreground text-lg">
             Your intelligent meeting management and note-taking platform
           </p>
@@ -56,9 +37,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">Schedule</div>
-                <p className="text-xs text-muted-foreground">
-                  Create a new meeting session
-                </p>
+                <p className="text-xs text-muted-foreground">Create a new meeting session</p>
               </CardContent>
             </Card>
           </Link>
@@ -71,9 +50,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">Browse</div>
-                <p className="text-xs text-muted-foreground">
-                  View past meeting records
-                </p>
+                <p className="text-xs text-muted-foreground">View past meeting records</p>
               </CardContent>
             </Card>
           </Link>
@@ -86,9 +63,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">Reference</div>
-                <p className="text-xs text-muted-foreground">
-                  Access terminology and definitions
-                </p>
+                <p className="text-xs text-muted-foreground">Access terminology and definitions</p>
               </CardContent>
             </Card>
           </Link>
@@ -98,16 +73,13 @@ export default function Home() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold tracking-tight">Recent Meetings</h2>
-            <Link 
-              href="/meetings" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Link href="/meetings" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               View all →
             </Link>
           </div>
-          
-          <MeetingList 
-            meetings={recentMeetings} 
+
+          <MeetingList
+            meetings={recentMeetings}
             emptyMessage="No recent meetings found. Schedule your first meeting to get started."
           />
         </div>
