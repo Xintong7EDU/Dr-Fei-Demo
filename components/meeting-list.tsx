@@ -7,9 +7,11 @@ import { CalendarIcon } from "lucide-react"
 interface MeetingListProps {
   meetings: Meeting[]
   emptyMessage: string
+  /** Base path for meeting detail links */
+  linkBasePath?: string
 }
 
-export function MeetingList({ meetings, emptyMessage }: MeetingListProps) {
+export function MeetingList({ meetings, emptyMessage, linkBasePath = "/meetings" }: MeetingListProps) {
   if (meetings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -22,7 +24,7 @@ export function MeetingList({ meetings, emptyMessage }: MeetingListProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {meetings.map((meeting) => (
-        <Link key={meeting.meeting_id} href={`/meetings/${meeting.meeting_id}`}>
+        <Link key={meeting.meeting_id} href={`${linkBasePath}/${meeting.meeting_id}`}>
           <Card className="h-full transition-all hover:shadow-md">
             <CardHeader>
               <CardTitle className="line-clamp-1">{meeting.topic_overview}</CardTitle>
