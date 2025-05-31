@@ -1,12 +1,34 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { CalendarIcon, ArchiveIcon, BookOpenIcon } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { Button } from "@/components/ui/button"
 
 export function MainNav() {
   const pathname = usePathname()
+  const router = useRouter()
+  const [session, setSession] = useState<any>(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push("/login")
+  }
 
   const navItems = [
     {
@@ -46,6 +68,17 @@ export function MainNav() {
             <span>{item.name}</span>
           </Link>
         ))}
+      </div>
+      <div className="ml-auto">
+        {session ? (
+          <Button variant="ghost" size="sm" onClick={handleSignOut}>
+            Sign Out
+          </Button>
+        ) : (
+          <Link href="/login" className="text-sm hover:underline">
+            Sign In
+          </Link>
+        )}
       </div>
     </nav>
   )

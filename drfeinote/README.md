@@ -22,6 +22,15 @@ Continue building your app on:
 
 **[https://v0.dev/chat/projects/6gUaOTCbHon](https://v0.dev/chat/projects/6gUaOTCbHon)**
 
+## Environment Variables
+
+Create a `.env` file based on `.env.example` and provide your Supabase project credentials:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=<your-supabase-url>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+```
+
 ## How It Works
 
 1. Create and modify your project using [v0.dev](https://v0.dev)
