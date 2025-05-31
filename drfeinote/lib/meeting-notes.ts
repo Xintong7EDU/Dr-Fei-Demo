@@ -2,13 +2,25 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { MeetingNote } from './types'
 
 /**
- * Service class for CRUD operations on meeting notes using Supabase.
+ * Manages `meeting_notes` records in Supabase.
+ *
+ * Each method wraps the corresponding database operation and
+ * returns strongly typed results.
  */
 export class MeetingNotesService {
+  /**
+   * Create a new service instance.
+   *
+   * @param supabase - Initialized Supabase client
+   */
   constructor(private supabase: SupabaseClient) {}
 
   /**
    * Create a meeting note for a meeting.
+   *
+   * @param meetingId - Identifier of the meeting
+   * @param content - Text content of the note
+   * @returns The newly created meeting note
    */
   async create(meetingId: number, content: string): Promise<MeetingNote> {
     const { data, error } = await this.supabase
@@ -21,7 +33,11 @@ export class MeetingNotesService {
     return data as MeetingNote
   }
 
-  /** Get a meeting note by its id. */
+  /**
+   * Get a meeting note by its id.
+   *
+   * @param noteId - Note identifier
+   */
   async getById(noteId: number): Promise<MeetingNote | null> {
     const { data, error } = await this.supabase
       .from('meeting_notes')
@@ -33,7 +49,11 @@ export class MeetingNotesService {
     return data as MeetingNote | null
   }
 
-  /** Get the meeting note for a specific meeting. */
+  /**
+   * Get the note attached to a specific meeting.
+   *
+   * @param meetingId - Meeting identifier
+   */
   async getByMeetingId(meetingId: number): Promise<MeetingNote | null> {
     const { data, error } = await this.supabase
       .from('meeting_notes')
@@ -45,7 +65,13 @@ export class MeetingNotesService {
     return data as MeetingNote | null
   }
 
-  /** Update the content of a meeting note. */
+  /**
+   * Update the content of a meeting note.
+   *
+   * @param noteId - Note identifier
+   * @param content - New note text
+   * @returns The updated note record
+   */
   async update(noteId: number, content: string): Promise<MeetingNote> {
     const { data, error } = await this.supabase
       .from('meeting_notes')
@@ -58,7 +84,11 @@ export class MeetingNotesService {
     return data as MeetingNote
   }
 
-  /** Delete a meeting note. */
+  /**
+   * Delete a meeting note.
+   *
+   * @param noteId - Identifier of the note to delete
+   */
   async delete(noteId: number): Promise<void> {
     const { error } = await this.supabase
       .from('meeting_notes')
