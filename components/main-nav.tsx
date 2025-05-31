@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { useSession } from "@/hooks/use-session"
 import { cn } from "@/lib/utils"
 import { CalendarIcon, ArchiveIcon, BookOpenIcon } from "lucide-react"
@@ -12,10 +13,22 @@ import { signOut } from "@/lib/auth"
 export function MainNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const session = useSession()
+  const [session, setSession] = useState<any>(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const handleSignOut = async () => {
-    await signOut(supabase)
+    await supabase.auth.signOut()
     router.push("/login")
   }
 

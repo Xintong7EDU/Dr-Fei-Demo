@@ -49,7 +49,7 @@ export default function Home() {
         {/* Quick Actions */}
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Link href="/meetings/new">
-            <Card className="transition-transform hover:scale-105 hover:shadow-md cursor-pointer animate-fade-in-up">
+            <Card className="transition-all hover:shadow-md cursor-pointer">
               <CardHeader className="flex flex-row items-center space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">New Meeting</CardTitle>
                 <PlusIcon className="h-4 w-4 ml-auto" />
@@ -64,7 +64,7 @@ export default function Home() {
           </Link>
 
           <Link href="/archive">
-            <Card className="transition-transform hover:scale-105 hover:shadow-md cursor-pointer animate-fade-in-up">
+            <Card className="transition-all hover:shadow-md cursor-pointer">
               <CardHeader className="flex flex-row items-center space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Archive</CardTitle>
                 <ArchiveIcon className="h-4 w-4 ml-auto" />
@@ -79,7 +79,7 @@ export default function Home() {
           </Link>
 
           <Link href="/glossary">
-            <Card className="transition-transform hover:scale-105 hover:shadow-md cursor-pointer animate-fade-in-up">
+            <Card className="transition-all hover:shadow-md cursor-pointer">
               <CardHeader className="flex flex-row items-center space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Glossary</CardTitle>
                 <BookOpenIcon className="h-4 w-4 ml-auto" />
