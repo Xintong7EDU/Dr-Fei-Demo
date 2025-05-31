@@ -93,9 +93,10 @@ export default async function Home() {
             </Link>
           </div>
           
-          <MeetingList 
-            meetings={recentMeetings} 
+          <MeetingList
+            meetings={recentMeetings}
             emptyMessage="No recent meetings found. Schedule your first meeting to get started."
+            linkBasePath="/recent"
           />
         </div>
 
