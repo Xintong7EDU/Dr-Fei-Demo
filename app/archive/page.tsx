@@ -8,10 +8,15 @@ export default async function ArchivePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Meeting Archive</h1>
-        <p className="text-muted-foreground">View past meetings and their notes</p>
+        <p className="text-muted-foreground">
+          View past meetings and their notes.
+        </p>
       </div>
 
-      <MeetingList meetings={pastMeetings} emptyMessage="No past meetings found" />
+      <MeetingList
+        meetings={pastMeetings}
+        emptyMessage="No past meetings found"
+      />
     </div>
   )
 }
