@@ -3,10 +3,12 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useSession } from "@/hooks/use-session"
 import { cn } from "@/lib/utils"
 import { CalendarIcon, ArchiveIcon, BookOpenIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
+import { signOut } from "@/lib/auth"
 
 export function MainNav() {
   const pathname = usePathname()

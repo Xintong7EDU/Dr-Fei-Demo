@@ -31,6 +31,11 @@ NEXT_PUBLIC_SUPABASE_URL=<your-supabase-url>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 ```
 
+## Authentication Flow
+
+Users can sign up and sign in with email and password. Authentication state is managed on the client through a `useSession` hook which listens for Supabase auth changes. The main navigation shows a **Sign Out** button when a session is active.
+
+
 ## How It Works
 
 1. Create and modify your project using [v0.dev](https://v0.dev)
