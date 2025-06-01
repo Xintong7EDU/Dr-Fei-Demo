@@ -15,6 +15,7 @@ interface EditMeetingFormProps {
 }
 
 export function EditMeetingForm({ meeting }: EditMeetingFormProps) {
+  const [meetingDate, setMeetingDate] = useState(meeting.meeting_date)
   const [startTime, setStartTime] = useState(meeting.start_time)
   const [endTime, setEndTime] = useState(meeting.end_time)
   const [topic, setTopic] = useState(meeting.topic_overview)
@@ -27,6 +28,7 @@ export function EditMeetingForm({ meeting }: EditMeetingFormProps) {
     setIsSaving(true)
     try {
       await updateMeeting(meeting.meeting_id, {
+        meeting_date: meetingDate,
         start_time: startTime,
         end_time: endTime,
         topic_overview: topic,
@@ -48,7 +50,12 @@ export function EditMeetingForm({ meeting }: EditMeetingFormProps) {
       <Card>
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input type="date" value={meeting.meeting_date} disabled />
+            <Input
+              type="date"
+              value={meetingDate}
+              onChange={(e) => setMeetingDate(e.target.value)}
+              required
+            />
             <div className="flex gap-2">
               <Input
                 type="time"
