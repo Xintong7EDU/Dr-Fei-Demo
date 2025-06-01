@@ -73,4 +73,26 @@ export class MeetingsService {
     if (error) throw error
     return data ?? null
   }
+
+  /**
+   * Update an existing meeting record.
+   *
+   * @param meetingId - Identifier of the meeting to update
+   * @param updates - Fields to update
+   * @returns The updated meeting
+   */
+  async update(
+    meetingId: number,
+    updates: Partial<Omit<Meeting, 'meeting_id'>>
+  ): Promise<Meeting> {
+    const { data, error } = await this.supabase
+      .from('meetings')
+      .update(updates)
+      .eq('meeting_id', meetingId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as Meeting
+  }
 }

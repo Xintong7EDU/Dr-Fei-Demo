@@ -52,14 +52,17 @@ export default async function MeetingDetailPage({
             </span>
           </div>
         </div>
-        <div>
+        <div className="flex items-center gap-2">
           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-            isPastMeeting 
-              ? "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" 
+            isPastMeeting
+              ? "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
               : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
           }`}>
             {isPastMeeting ? "Past Meeting" : "Upcoming Meeting"}
           </span>
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`/meetings/${meetingId}/edit`}>Edit</Link>
+          </Button>
         </div>
       </div>
 
