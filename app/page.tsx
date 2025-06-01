@@ -110,7 +110,7 @@ export default async function Home() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold tracking-tight">Upcoming Meetings</h2>
             <Link
-              href="/schedule"
+              href="/meetings"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               View all →
@@ -120,7 +120,7 @@ export default async function Home() {
           <MeetingList
             meetings={upcomingMeetings}
             emptyMessage="No meetings scheduled."
-            linkBasePath="/schedule"
+            linkBasePath="/meetings"
           />
         </SlideUp>
 
