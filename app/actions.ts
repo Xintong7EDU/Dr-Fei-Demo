@@ -21,6 +21,12 @@ export async function getMeeting(id: number): Promise<Meeting | null> {
   return meetingsSvc.getById(id)
 }
 
+export async function createMeeting(
+  meeting: Omit<Meeting, 'meeting_id'>
+): Promise<Meeting> {
+  return meetingsSvc.create(meeting)
+}
+
 export async function getMeetingNotes(meetingId: number): Promise<MeetingNote | null> {
   return notesSvc.getByMeetingId(meetingId)
 }
