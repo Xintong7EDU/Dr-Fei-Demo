@@ -1,4 +1,4 @@
-import { MeetingNotesService } from '../../../lib/meeting-notes.js'
+import { MeetingNotesService } from '../../../dist/lib/meeting-notes.js'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 

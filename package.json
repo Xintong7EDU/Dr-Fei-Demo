@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test"
+    "test": "tsc -p tsconfig.build.json && node --test"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.11",
