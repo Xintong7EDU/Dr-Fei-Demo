@@ -16,6 +16,7 @@ import {
 
 export default async function Home() {
   const meetingsService = new MeetingsService(supabase)
+  const upcomingMeetings = await meetingsService.list("upcoming")
   const recentMeetings = await meetingsService.list("past")
 
   return (
@@ -103,6 +104,25 @@ export default async function Home() {
             </Link>
           </StaggerItem>
         </StaggerContainer>
+
+        {/* Upcoming Meetings Section */}
+        <SlideUp delay={0.2} className="space-y-6 mb-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold tracking-tight">Upcoming Meetings</h2>
+            <Link
+              href="/schedule"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              View all →
+            </Link>
+          </div>
+
+          <MeetingList
+            meetings={upcomingMeetings}
+            emptyMessage="No meetings scheduled."
+            linkBasePath="/schedule"
+          />
+        </SlideUp>
 
         {/* Recent Meetings Section */}
         <SlideUp delay={0.3} className="space-y-6">
