@@ -16,6 +16,25 @@ export class MeetingsService {
   }
 
   /**
+   * Create a new meeting record.
+   *
+   * @param meeting - Meeting fields excluding the id
+   * @returns The newly created meeting
+   */
+  async create(
+    meeting: Omit<Meeting, 'meeting_id'>
+  ): Promise<Meeting> {
+    const { data, error } = await this.supabase
+      .from('meetings')
+      .insert(meeting)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as Meeting
+  }
+
+  /**
    * List upcoming or past meetings based on date.
    *
    * @param status - Whether to list `upcoming` or `past` meetings
