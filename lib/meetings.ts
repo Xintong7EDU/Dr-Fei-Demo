@@ -5,12 +5,13 @@ import { Meeting } from './types'
  * Provides CRUD operations for the `meetings` table.
  */
 export class MeetingsService {
+  private supabase: SupabaseClient
   /**
    * Create a new service instance.
    *
    * @param supabase - Initialized Supabase client
    */
-  constructor(supabase) {
+  constructor(supabase: SupabaseClient) {
     this.supabase = supabase
   }
 
@@ -20,7 +21,7 @@ export class MeetingsService {
    * @param status - Whether to list `upcoming` or `past` meetings
    * @returns Array of meeting records
    */
-  async list(status) {
+  async list(status: 'upcoming' | 'past'): Promise<Meeting[]> {
     const today = new Date().toISOString().split('T')[0]
     let query = this.supabase
       .from('meetings')
@@ -43,7 +44,7 @@ export class MeetingsService {
    *
    * @param meetingId - Meeting identifier
    */
-  async getById(meetingId) {
+  async getById(meetingId: number): Promise<Meeting | null> {
     const { data, error } = await this.supabase
       .from('meetings')
       .select('*')

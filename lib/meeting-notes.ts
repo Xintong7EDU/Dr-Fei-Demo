@@ -1,4 +1,7 @@
 
+import { SupabaseClient } from '@supabase/supabase-js'
+import type { MeetingNote } from './types'
+
 /**
  * Manages `meeting_notes` records in Supabase.
  *
@@ -6,12 +9,13 @@
  * returns strongly typed results.
  */
 export class MeetingNotesService {
+  private supabase: SupabaseClient
   /**
    * Create a new service instance.
    *
    * @param supabase - Initialized Supabase client
    */
-  constructor(supabase) {
+  constructor(supabase: SupabaseClient) {
     this.supabase = supabase
   }
 
@@ -22,7 +26,7 @@ export class MeetingNotesService {
    * @param content - Text content of the note
    * @returns The newly created meeting note
    */
-  async create(meetingId, content) {
+  async create(meetingId: number, content: string): Promise<MeetingNote> {
     const { data, error } = await this.supabase
       .from('meeting_notes')
       .insert({ meeting_id: meetingId, note_content: content })
@@ -37,7 +41,7 @@ export class MeetingNotesService {
    *
    * @param noteId - Note identifier
    */
-  async getById(noteId) {
+  async getById(noteId: number): Promise<MeetingNote | null> {
     const { data, error } = await this.supabase
       .from('meeting_notes')
       .select('*')
@@ -53,7 +57,7 @@ export class MeetingNotesService {
    *
    * @param meetingId - Meeting identifier
    */
-  async getByMeetingId(meetingId) {
+  async getByMeetingId(meetingId: number): Promise<MeetingNote | null> {
     const { data, error } = await this.supabase
       .from('meeting_notes')
       .select('*')
@@ -72,7 +76,7 @@ export class MeetingNotesService {
    * @returns The updated note record
    */
 
-  async update(noteId, content) {
+  async update(noteId: number, content: string): Promise<MeetingNote> {
     const { data, error } = await this.supabase
       .from('meeting_notes')
       .update({ note_content: content })
@@ -90,7 +94,7 @@ export class MeetingNotesService {
    * @param noteId - Identifier of the note to delete
    */
 
-  async delete(noteId) {
+  async delete(noteId: number): Promise<void> {
     const { error } = await this.supabase
       .from('meeting_notes')
       .delete()

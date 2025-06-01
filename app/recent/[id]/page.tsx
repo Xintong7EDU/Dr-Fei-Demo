@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { notFound, params as getParams } from "next/navigation"
 import { getMeeting, getMeetingNotes, getQnAForMeeting } from "@/app/actions"
 import { formatDate } from "@/lib/utils"
 import { NotesEditor } from "@/components/notes-editor"
@@ -8,14 +8,9 @@ import { ArrowLeft, Clock } from "lucide-react"
 import Link from "next/link"
 import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from "@/components/ui/motion"
 
-interface MeetingDetailPageProps {
-  params: {
-    id: string
-  }
-}
-
-export default async function MeetingDetailPage({ params }: MeetingDetailPageProps) {
-  const meetingId = Number.parseInt(params.id)
+export default async function MeetingDetailPage() {
+  const { id } = await getParams<{ id: string }>()
+  const meetingId = Number.parseInt(id)
 
   if (isNaN(meetingId)) {
     notFound()
