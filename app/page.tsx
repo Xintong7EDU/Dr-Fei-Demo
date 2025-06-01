@@ -1,5 +1,3 @@
-"use client"
-
 import { MainNav } from "@/components/main-nav"
 import { MeetingList } from "@/components/meeting-list"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
