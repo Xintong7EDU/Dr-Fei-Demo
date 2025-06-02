@@ -28,6 +28,131 @@ export async function getMeetings(status: 'upcoming' | 'past'): Promise<Meeting[
   return meetingsSvc.list(status)
 }
 
+/**
+ * Get recent meetings with enhanced filtering and sorting options
+ * Syncs with database and provides real-time data
+ */
+export async function getRecentMeetings(options?: {
+  limit?: number
+  searchQuery?: string
+  dateFrom?: string
+  dateTo?: string
+  sortBy?: 'meeting_date' | 'topic_overview' | 'created_at'
+  sortOrder?: 'asc' | 'desc'
+}): Promise<Meeting[]> {
+  const supabase = await createSupabaseServer()
+  const {
+    limit = 50,
+    searchQuery = '',
+    dateFrom,
+    dateTo,
+    sortBy = 'meeting_date',
+    sortOrder = 'desc'
+  } = options || {}
+
+  let query = supabase
+    .from('meetings')
+    .select('*')
+    .lt('meeting_date', new Date().toISOString().split('T')[0]) // Only past meetings
+
+  // Apply search filter
+  if (searchQuery) {
+    query = query.ilike('topic_overview', `%${searchQuery}%`)
+  }
+
+  // Apply date range filters
+  if (dateFrom) {
+    query = query.gte('meeting_date', dateFrom)
+  }
+  if (dateTo) {
+    query = query.lte('meeting_date', dateTo)
+  }
+
+  // Apply sorting and limiting
+  query = query.order(sortBy, { ascending: sortOrder === 'asc' }).limit(limit)
+
+  const { data, error } = await query
+  if (error) throw error
+  return (data ?? []) as Meeting[]
+}
+
+/**
+ * Get meeting statistics for analytics
+ * Provides real-time metrics from database
+ */
+export async function getMeetingStats(): Promise<{
+  totalMeetings: number
+  thisMonthMeetings: number
+  lastWeekMeetings: number
+  averageDuration: number
+  totalHours: number
+  mostActiveMonth: string
+}> {
+  const supabase = await createSupabaseServer()
+  
+  // Get all past meetings
+  const { data: meetings, error } = await supabase
+    .from('meetings')
+    .select('*')
+    .lt('meeting_date', new Date().toISOString().split('T')[0])
+    .order('meeting_date', { ascending: false })
+
+  if (error) throw error
+
+  const meetingsData = meetings as Meeting[]
+  const totalMeetings = meetingsData.length
+
+  // Calculate current month meetings
+  const currentDate = new Date()
+  const currentMonth = currentDate.getMonth()
+  const currentYear = currentDate.getFullYear()
+  const thisMonthMeetings = meetingsData.filter((meeting) => {
+    const meetingDate = new Date(meeting.meeting_date)
+    return meetingDate.getMonth() === currentMonth && meetingDate.getFullYear() === currentYear
+  }).length
+
+  // Calculate last week meetings
+  const lastWeekDate = new Date()
+  lastWeekDate.setDate(lastWeekDate.getDate() - 7)
+  const lastWeekMeetings = meetingsData.filter((meeting) => {
+    const meetingDate = new Date(meeting.meeting_date)
+    return meetingDate >= lastWeekDate
+  }).length
+
+  // Calculate total hours and average duration
+  const totalHours = meetingsData.reduce((total, meeting) => {
+    const startTime = new Date(`1970-01-01 ${meeting.start_time}`)
+    const endTime = new Date(`1970-01-01 ${meeting.end_time}`)
+    const durationMs = endTime.getTime() - startTime.getTime()
+    const durationHours = durationMs / (1000 * 60 * 60)
+    return total + durationHours
+  }, 0)
+
+  const averageDuration = totalMeetings > 0 ? totalHours / totalMeetings : 0
+
+  // Find most active month
+  const monthCounts = meetingsData.reduce((acc, meeting) => {
+    const date = new Date(meeting.meeting_date)
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    acc[monthKey] = (acc[monthKey] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  const mostActiveMonth = Object.entries(monthCounts).reduce(
+    (max, [month, count]) => count > max.count ? { month, count } : max,
+    { month: '', count: 0 }
+  ).month
+
+  return {
+    totalMeetings,
+    thisMonthMeetings,
+    lastWeekMeetings,
+    averageDuration,
+    totalHours,
+    mostActiveMonth
+  }
+}
+
 export async function getMeeting(id: number): Promise<Meeting | null> {
   const supabase = await createSupabaseServer()
   const meetingsSvc = new MeetingsService(supabase)

@@ -3,6 +3,7 @@ import { getMeeting, getMeetingNotes, getQnAForMeeting } from "@/app/actions"
 import { formatDate } from "@/lib/utils"
 import { NotesEditor } from "@/components/notes-editor"
 import { QnASection } from "@/components/qna-section"
+import { FAQSection } from "@/components/faq-section"
 import { MeetingParticipants } from "@/components/meeting-participants"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -95,10 +96,10 @@ export default async function MeetingDetailPage({
         </CardContent>
       </Card>
 
-      {/* Main content area with notes, Q&A, and participants */}
+      {/* Main content area with notes on left and FAQ on right */}
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Left column - Meeting Notes */}
-        <div className="lg:col-span-2 space-y-8">
+        {/* Left column - Meeting Notes (2/3 width) */}
+        <div className="lg:col-span-2">
           <Card className="border-t-4 border-t-blue-500 dark:border-t-blue-400 shadow-sm hover:shadow-md transition-all">
             <CardHeader className="pb-2">
               <CardTitle className="text-xl font-semibold flex items-center">
@@ -115,89 +116,35 @@ export default async function MeetingDetailPage({
               <NotesEditor meetingId={meetingId} initialContent={notes?.note_content || ""} />
             </CardContent>
           </Card>
-
-          <Card className="border-t-4 border-t-purple-500 dark:border-t-purple-400 shadow-sm hover:shadow-md transition-all">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-semibold flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Supply Chain Q&A
-              </CardTitle>
-              <CardDescription>
-                Ask questions about supply chain terminology and concepts
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <QnASection meetingId={meetingId} initialEntries={qnaEntries} />
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Right column - Participants */}
-        <div className="space-y-8">
-          <MeetingParticipants />
-          
-          {/* Additional meeting resources card */}
+        {/* Right column - FAQ Section (1/3 width) */}
+        <div className="lg:col-span-1">
           <Card className="border-t-4 border-t-green-500 dark:border-t-green-400 shadow-sm hover:shadow-md transition-all">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-semibold flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-500 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Resources
-              </CardTitle>
-              <CardDescription>
-                Meeting documents and related resources
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-md border hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-green-100 dark:bg-green-900 p-2 rounded-md">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Meeting Agenda</p>
-                      <p className="text-xs text-muted-foreground">PDF • 245 KB</p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    View
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-md border hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-md">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Supply Chain Report</p>
-                      <p className="text-xs text-muted-foreground">XLSX • 1.2 MB</p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    View
-                  </Button>
-                </div>
-                
-                <Button variant="outline" size="sm" className="w-full mt-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Add Resource
-                </Button>
-              </div>
+            <CardContent className="p-6">
+              <FAQSection />
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* AI Conversation Section at the bottom */}
+      <Card className="border-t-4 border-t-purple-500 dark:border-t-purple-400 shadow-sm hover:shadow-md transition-all">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xl font-semibold flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            AI Conversation
+          </CardTitle>
+          <CardDescription>
+            Chat with AI about supply chain topics
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <QnASection meetingId={meetingId} initialEntries={qnaEntries} />
+        </CardContent>
+      </Card>
     </div>
   )
 }

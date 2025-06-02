@@ -3,7 +3,9 @@ import { getMeeting, getMeetingNotes, getQnAForMeeting } from "@/app/actions"
 import { formatDate } from "@/lib/utils"
 import { NotesEditor } from "@/components/notes-editor"
 import { QnASection } from "@/components/qna-section"
+import { FAQSection } from "@/components/faq-section"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ArrowLeft, Clock } from "lucide-react"
 import Link from "next/link"
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion"
@@ -51,8 +53,9 @@ export default async function MeetingDetailPage({
         </div>
       </FadeIn>
 
-      <StaggerContainer className="grid gap-8 md:grid-cols-2">
-        <StaggerItem index={0} className="space-y-4">
+      <StaggerContainer className="grid gap-8 lg:grid-cols-3">
+        {/* Left column - Meeting Notes (2/3 width) */}
+        <StaggerItem index={0} className="lg:col-span-2 space-y-4">
           <div className="flex items-center">
             <h2 className="text-xl font-semibold">Meeting Notes</h2>
             <div className="ml-2 h-1 w-1 rounded-full bg-primary animate-pulse"></div>
@@ -62,9 +65,10 @@ export default async function MeetingDetailPage({
           </div>
         </StaggerItem>
 
-        <StaggerItem index={1} className="space-y-4">
+        {/* Right column - AI Conversation (1/3 width) */}
+        <StaggerItem index={1} className="lg:col-span-1 space-y-4">
           <div className="flex items-center">
-            <h2 className="text-xl font-semibold">Supply Chain Q&A</h2>
+            <h2 className="text-xl font-semibold">AI Conversation</h2>
             <div className="ml-2 h-1 w-1 rounded-full bg-primary animate-pulse"></div>
           </div>
           <div className="bg-card rounded-lg border shadow-sm p-4 transition-all hover:shadow-md">
@@ -72,6 +76,15 @@ export default async function MeetingDetailPage({
           </div>
         </StaggerItem>
       </StaggerContainer>
+
+      {/* FAQ Section at the bottom */}
+      <FadeIn delay={0.4}>
+        <Card className="border-t-4 border-t-green-500 dark:border-t-green-400 shadow-sm hover:shadow-md transition-all">
+          <CardContent className="p-6">
+            <FAQSection />
+          </CardContent>
+        </Card>
+      </FadeIn>
     </div>
   )
 }
