@@ -42,3 +42,10 @@ Users can sign up and sign in with email and password. Authentication state is m
 2. Deploy your chats from the v0 interface
 3. Changes are automatically pushed to this repository
 4. Vercel deploys the latest version from this repository
+
+## Database Error Logging
+
+The Supabase schema now includes an `error_log` table used to capture database
+errors. Triggers on `meetings`, `meeting_notes`, and `qna_entries` insert the
+error message and timestamp whenever an unexpected failure occurs during an
+insert, update, or delete. Review this table to debug failed operations.

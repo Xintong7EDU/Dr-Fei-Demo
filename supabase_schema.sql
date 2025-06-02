@@ -22,3 +22,33 @@ CREATE TABLE IF NOT EXISTS qna_entries (
   gpt4_response text NOT NULL,
   created_at timestamp with time zone DEFAULT now()
 );
+
+-- Table for capturing database errors
+CREATE TABLE IF NOT EXISTS error_log (
+  error_id serial PRIMARY KEY,
+  message text NOT NULL,
+  occurred_at timestamp with time zone DEFAULT now()
+);
+
+-- Generic function to log errors from table operations
+CREATE OR REPLACE FUNCTION log_table_error() RETURNS TRIGGER AS $$
+BEGIN
+  RETURN NEW;
+EXCEPTION WHEN others THEN
+  INSERT INTO error_log(message, occurred_at) VALUES (SQLERRM, now());
+  RAISE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Triggers to capture errors on existing tables
+CREATE TRIGGER meetings_error_log
+AFTER INSERT OR UPDATE OR DELETE ON meetings
+FOR EACH ROW EXECUTE FUNCTION log_table_error();
+
+CREATE TRIGGER meeting_notes_error_log
+AFTER INSERT OR UPDATE OR DELETE ON meeting_notes
+FOR EACH ROW EXECUTE FUNCTION log_table_error();
+
+CREATE TRIGGER qna_entries_error_log
+AFTER INSERT OR UPDATE OR DELETE ON qna_entries
+FOR EACH ROW EXECUTE FUNCTION log_table_error();
