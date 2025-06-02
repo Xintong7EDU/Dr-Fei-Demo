@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, HTMLMotionProps } from "framer-motion";
 import { ReactNode } from "react";
 
-type MotionDivProps = React.HTMLAttributes<HTMLDivElement>;
+type MotionDivProps = Omit<HTMLMotionProps<"div">, "children">;
 
 // Fade In animation component
 export const FadeIn = ({

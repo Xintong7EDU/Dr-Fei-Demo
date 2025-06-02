@@ -12,9 +12,9 @@ import Link from "next/link"
 export default async function MeetingDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const { id } = params
+  const { id } = await params
   const meetingId = Number.parseInt(id)
 
   if (isNaN(meetingId)) {

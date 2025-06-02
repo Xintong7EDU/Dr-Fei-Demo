@@ -11,9 +11,9 @@ import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion"
 export default async function MeetingDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const { id } = params
+  const { id } = await params
   const meetingId = Number.parseInt(id)
 
   if (isNaN(meetingId)) {
