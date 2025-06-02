@@ -202,7 +202,7 @@ export function RecentMeetingsFilters({
           
           {currentSearch && (
             <Badge variant="secondary" className="flex items-center gap-1">
-              Search: "{currentSearch}"
+              Search: &quot;{currentSearch}&quot;
               <X
                 className="h-3 w-3 cursor-pointer hover:text-destructive"
                 onClick={() => handleSearchChange("")}
