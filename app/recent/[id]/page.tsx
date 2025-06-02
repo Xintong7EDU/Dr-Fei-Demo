@@ -6,7 +6,7 @@ import { QnASection } from "@/components/qna-section"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Clock } from "lucide-react"
 import Link from "next/link"
-import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from "@/components/ui/motion"
+import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion"
 
 export default async function MeetingDetailPage({
   params,

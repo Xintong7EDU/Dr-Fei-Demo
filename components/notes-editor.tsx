@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { saveNotes } from "@/app/actions"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
 import { Save, Clock, AlertCircle } from "lucide-react"
 import { useToastContext } from "@/hooks/use-toast-context"
 import { cn } from "@/lib/utils"
@@ -46,7 +45,7 @@ export function NotesEditor({ meetingId, initialContent }: NotesEditorProps) {
         description: "Your meeting notes have been saved successfully.",
         variant: "success"
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error saving notes",
         description: "There was a problem saving your notes. Please try again.",

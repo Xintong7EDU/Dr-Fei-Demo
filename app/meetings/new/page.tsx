@@ -30,7 +30,7 @@ export default function NewMeetingPage() {
       })
       toast({ title: 'Meeting scheduled' })
       router.push(`/meetings/${meeting.meeting_id}`)
-    } catch (err) {
+    } catch {
       toast({
         title: 'Error scheduling meeting',
         variant: 'destructive',

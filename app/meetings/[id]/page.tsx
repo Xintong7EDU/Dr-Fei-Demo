@@ -6,7 +6,7 @@ import { QnASection } from "@/components/qna-section"
 import { MeetingParticipants } from "@/components/meeting-participants"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { ArrowLeft, Clock, Calendar, Users, Tag } from "lucide-react"
+import { ArrowLeft, Clock, Calendar, Tag } from "lucide-react"
 import Link from "next/link"
 
 export default async function MeetingDetailPage({
@@ -136,7 +136,7 @@ export default async function MeetingDetailPage({
 
         {/* Right column - Participants */}
         <div className="space-y-8">
-          <MeetingParticipants meetingId={meetingId} />
+          <MeetingParticipants />
           
           {/* Additional meeting resources card */}
           <Card className="border-t-4 border-t-green-500 dark:border-t-green-400 shadow-sm hover:shadow-md transition-all">

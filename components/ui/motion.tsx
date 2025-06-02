@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ReactNode } from "react";
 
+type MotionDivProps = React.HTMLAttributes<HTMLDivElement>;
+
 // Fade In animation component
 export const FadeIn = ({
   children,
@@ -13,8 +15,7 @@ export const FadeIn = ({
   children: ReactNode;
   delay?: number;
   className?: string;
-  [key: string]: any;
-}) => {
+} & MotionDivProps) => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -39,8 +40,7 @@ export const SlideUp = ({
   children: ReactNode;
   delay?: number;
   className?: string;
-  [key: string]: any;
-}) => {
+} & MotionDivProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -64,15 +64,12 @@ export const SlideUp = ({
 // Staggered children animation
 export const StaggerContainer = ({
   children,
-  staggerDelay = 0.1,
   className = "",
   ...props
 }: {
   children: ReactNode;
-  staggerDelay?: number;
   className?: string;
-  [key: string]: any;
-}) => {
+} & MotionDivProps) => {
   return (
     <motion.div
       initial="hidden"
@@ -96,8 +93,7 @@ export const StaggerItem = ({
   children: ReactNode;
   index?: number;
   className?: string;
-  [key: string]: any;
-}) => {
+} & MotionDivProps) => {
   return (
     <motion.div
       variants={{
@@ -149,8 +145,7 @@ export const HoverCard = ({
 }: {
   children: ReactNode;
   className?: string;
-  [key: string]: any;
-}) => {
+} & MotionDivProps) => {
   return (
     <motion.div
       whileHover={{ 

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { getMeeting } from "@/app/actions"
-import type { Meeting } from "@/lib/types"
 import { EditMeetingForm } from "@/components/edit-meeting-form"
 
 export default async function EditMeetingPage({ params }: { params: { id: string } }) {

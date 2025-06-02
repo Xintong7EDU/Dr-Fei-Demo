@@ -3,18 +3,17 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { useSession } from "@/hooks/use-session"
+import type { Session } from "@supabase/supabase-js"
 import { cn } from "@/lib/utils"
 import { CalendarIcon, ArchiveIcon, BookOpenIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
-import { signOut } from "@/lib/auth"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export function MainNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))

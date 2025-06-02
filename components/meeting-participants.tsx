@@ -17,11 +17,10 @@ interface Participant {
 }
 
 interface MeetingParticipantsProps {
-  meetingId: number
   className?: string
 }
 
-export function MeetingParticipants({ meetingId, className }: MeetingParticipantsProps) {
+export function MeetingParticipants({ className }: MeetingParticipantsProps) {
   // In a real app, you would fetch participants from an API
   const [participants, setParticipants] = useState<Participant[]>([
     { id: "1", name: "Dr. Fei Li", role: "Supply Chain Expert", initials: "FL" },
