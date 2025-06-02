@@ -3,7 +3,6 @@ import { getMeeting, getMeetingNotes, getQnAForMeeting } from "@/app/actions"
 import { formatDate } from "@/lib/utils"
 import { NotesEditor } from "@/components/notes-editor"
 import { QnASection } from "@/components/qna-section"
-import { FAQSection } from "@/components/faq-section"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ArrowLeft, Clock, Calendar, Tag } from "lucide-react"
@@ -95,10 +94,10 @@ export default async function MeetingDetailPage({
         </CardContent>
       </Card>
 
-      {/* Main content area with notes on left and FAQ on right */}
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* Left column - Meeting Notes (2/3 width) */}
-        <div className="lg:col-span-2">
+      {/* Main content area with notes */}
+      <div className="grid gap-8">
+        {/* Meeting Notes */}
+        <div>
           <Card className="border-t-4 border-t-blue-500 dark:border-t-blue-400 shadow-sm hover:shadow-md transition-all">
             <CardHeader className="pb-2">
               <CardTitle className="text-xl font-semibold flex items-center">
@@ -113,15 +112,6 @@ export default async function MeetingDetailPage({
             </CardHeader>
             <CardContent>
               <NotesEditor meetingId={meetingId} initialContent={notes?.note_content || ""} />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right column - FAQ Section (1/3 width) */}
-        <div className="lg:col-span-1">
-          <Card className="border-t-4 border-t-green-500 dark:border-t-green-400 shadow-sm hover:shadow-md transition-all">
-            <CardContent className="p-6">
-              <FAQSection />
             </CardContent>
           </Card>
         </div>
