@@ -1,139 +1,81 @@
 "use server"
 
-import type { Meeting, MeetingNote, QnAEntry } from "@/lib/types"
+import { createClient } from '@supabase/supabase-js'
+import type { Meeting, MeetingNote, QnAEntry } from '@/lib/types'
+import { MeetingNotesService } from '@/lib/meeting-notes'
+import { MeetingsService } from '@/lib/meetings'
 
-// Mock data for development
-const mockMeetings: Meeting[] = [
-  {
-    meeting_id: 1,
-    meeting_date: "2025-06-05",
-    start_time: "10:00:00",
-    end_time: "11:00:00",
-    topic_overview: "Q2 Supply Chain Review",
-  },
-  {
-    meeting_id: 2,
-    meeting_date: "2025-06-10",
-    start_time: "14:00:00",
-    end_time: "15:30:00",
-    topic_overview: "Vendor Negotiations Strategy",
-  },
-  {
-    meeting_id: 3,
-    meeting_date: "2025-05-20",
-    start_time: "09:00:00",
-    end_time: "10:00:00",
-    topic_overview: "Logistics Optimization Plan",
-  },
-]
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-const mockNotes: MeetingNote[] = [
-  {
-    note_id: 1,
-    meeting_id: 1,
-    note_content:
-      "Discussed Q2 performance metrics. Need to improve delivery times by 15%. Action items assigned to logistics team.",
-  },
-  {
-    note_id: 2,
-    meeting_id: 2,
-    note_content:
-      "Vendor A offering 5% discount for bulk orders. Vendor B has better payment terms. Decision pending additional data.",
-  },
-  {
-    note_id: 3,
-    meeting_id: 3,
-    note_content:
-      "Identified three bottlenecks in current logistics flow. Team to implement new routing algorithm by end of month.",
-  },
-]
+const meetingsSvc = new MeetingsService(supabase)
+const notesSvc = new MeetingNotesService(supabase)
 
-const mockQnA: QnAEntry[] = [
-  {
-    qna_id: 1,
-    meeting_id: 1,
-    term_or_question: "What is OTIF in supply chain?",
-    gpt4_response:
-      "OTIF stands for 'On Time In Full'. It's a key performance indicator in supply chain management that measures the percentage of deliveries that are delivered on time and with the complete order quantity. A high OTIF rate indicates efficient supply chain operations.",
-  },
-  {
-    qna_id: 2,
-    meeting_id: 2,
-    term_or_question: "Explain vendor managed inventory",
-    gpt4_response:
-      "Vendor Managed Inventory (VMI) is a business model where the supplier takes full responsibility for maintaining the inventory of their products at the buyer's location. The vendor monitors the buyer's inventory levels and makes replenishment decisions. This approach can reduce stockouts, improve cash flow, and strengthen supplier-buyer relationships.",
-  },
-  {
-    qna_id: 3,
-    meeting_id: null,
-    term_or_question: "What is a bullwhip effect?",
-    gpt4_response:
-      "The bullwhip effect refers to increasing swings in inventory in response to shifts in consumer demand as one moves further up the supply chain. Small changes in retail demand can result in larger variations in orders placed with wholesalers and manufacturers. This effect can lead to inefficiencies such as excessive inventory, capacity issues, poor customer service, and increased costs throughout the supply chain.",
-  },
-]
-
-// API functions
-export async function getMeetings(status: "upcoming" | "past"): Promise<Meeting[]> {
-  // In a real app, this would be an API call
-  const today = new Date().toISOString().split("T")[0]
-
-  if (status === "upcoming") {
-    return mockMeetings.filter((meeting) => meeting.meeting_date >= today)
-  } else {
-    return mockMeetings.filter((meeting) => meeting.meeting_date < today)
-  }
+export async function getMeetings(status: 'upcoming' | 'past'): Promise<Meeting[]> {
+  return meetingsSvc.list(status)
 }
 
-export async function getMeeting(id: number): Promise<Meeting | undefined> {
-  // In a real app, this would be an API call
-  return mockMeetings.find((meeting) => meeting.meeting_id === id)
+export async function getMeeting(id: number): Promise<Meeting | null> {
+  return meetingsSvc.getById(id)
 }
 
-export async function getMeetingNotes(meetingId: number): Promise<MeetingNote | undefined> {
-  // In a real app, this would be an API call
-  return mockNotes.find((note) => note.meeting_id === meetingId)
+export async function createMeeting(
+  meeting: Omit<Meeting, 'meeting_id'>
+): Promise<Meeting> {
+  return meetingsSvc.create(meeting)
+}
+
+export async function updateMeeting(
+  id: number,
+  updates: Partial<Omit<Meeting, 'meeting_id'>>
+): Promise<Meeting> {
+  return meetingsSvc.update(id, updates)
+}
+
+export async function getMeetingNotes(meetingId: number): Promise<MeetingNote | null> {
+  return notesSvc.getByMeetingId(meetingId)
 }
 
 export async function saveNotes(meetingId: number, content: string): Promise<MeetingNote> {
-  // In a real app, this would be an API call
-  const existingNote = mockNotes.find((note) => note.meeting_id === meetingId)
-
-  if (existingNote) {
-    existingNote.note_content = content
-    return existingNote
+  const existing = await notesSvc.getByMeetingId(meetingId)
+  if (existing) {
+    return notesSvc.update(existing.note_id, content)
   }
-
-  const newNote: MeetingNote = {
-    note_id: mockNotes.length + 1,
-    meeting_id: meetingId,
-    note_content: content,
-  }
-
-  mockNotes.push(newNote)
-  return newNote
+  return notesSvc.create(meetingId, content)
 }
 
 export async function getQnAForMeeting(meetingId: number): Promise<QnAEntry[]> {
-  // In a real app, this would be an API call
-  return mockQnA.filter((qna) => qna.meeting_id === meetingId)
+  const { data, error } = await supabase
+    .from('qna_entries')
+    .select('*')
+    .eq('meeting_id', meetingId)
+    .order('qna_id', { ascending: false })
+
+  if (error) throw error
+  return (data ?? []) as QnAEntry[]
 }
 
 export async function getAllQnA(): Promise<QnAEntry[]> {
-  // In a real app, this would be an API call
-  return mockQnA
+  const { data, error } = await supabase
+    .from('qna_entries')
+    .select('*')
+    .order('qna_id', { ascending: false })
+
+  if (error) throw error
+  return (data ?? []) as QnAEntry[]
 }
 
 export async function askQuestion(question: string, meetingId?: number): Promise<QnAEntry> {
-  // In a real app, this would call the GPT-4.1 API
   const mockResponse = `This is a simulated response for the question: "${question}". In a real implementation, this would be generated by GPT-4.1 with accurate information about supply chain terminology.`
 
-  const newQnA: QnAEntry = {
-    qna_id: mockQnA.length + 1,
-    meeting_id: meetingId || null,
-    term_or_question: question,
-    gpt4_response: mockResponse,
-  }
+  const { data, error } = await supabase
+    .from('qna_entries')
+    .insert({ meeting_id: meetingId ?? null, term_or_question: question, gpt4_response: mockResponse })
+    .select()
+    .single()
 
-  mockQnA.push(newQnA)
-  return newQnA
+  if (error) throw error
+  return data as QnAEntry
 }

@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "declaration": false
+  },
+  "include": [
+    "lib/meeting-notes.ts",
+    "lib/meetings.ts",
+    "lib/types.ts",
+    "types/*.d.ts"
+  ]
+}

@@ -1,60 +1,64 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useEffect } from "react"
+
+export type ToastVariant = "default" | "destructive" | "success"
 
 export interface Toast {
   id: string
-  title?: string
+  title: string
   description?: string
-  variant?: "default" | "destructive"
+  variant?: ToastVariant
+  duration?: number
 }
 
-interface ToastState {
-  toasts: Toast[]
+interface ToastOptions {
+  title: string
+  description?: string
+  variant?: ToastVariant
+  duration?: number
 }
-
-const toastState: ToastState = {
-  toasts: []
-}
-
-let toastCount = 0
 
 export function useToast() {
-  const [, forceUpdate] = useState({})
+  const [toasts, setToasts] = useState<Toast[]>([])
 
-  const toast = useCallback(({ title, description, variant = "default" }: Omit<Toast, "id">) => {
-    const id = (++toastCount).toString()
+  const toast = ({ title, description, variant = "default", duration = 5000 }: ToastOptions) => {
+    const id = Math.random().toString(36).substring(2, 9)
     const newToast: Toast = {
       id,
       title,
       description,
-      variant
+      variant,
+      duration,
     }
 
-    toastState.toasts.push(newToast)
-    forceUpdate({})
+    setToasts((prevToasts) => [...prevToasts, newToast])
 
-    // Auto-remove toast after 5 seconds
-    setTimeout(() => {
-      toastState.toasts = toastState.toasts.filter(t => t.id !== id)
-      forceUpdate({})
-    }, 5000)
+    return id
+  }
 
-    return {
-      id,
-      dismiss: () => {
-        toastState.toasts = toastState.toasts.filter(t => t.id !== id)
-        forceUpdate({})
-      }
+  const dismiss = (id: string) => {
+    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id))
+  }
+
+  useEffect(() => {
+    if (toasts.length > 0) {
+      const timer = setTimeout(() => {
+        setToasts((prevToasts) => {
+          const [, ...rest] = prevToasts
+          return rest
+        })
+      }, toasts[0].duration)
+
+      return () => clearTimeout(timer)
     }
-  }, [])
+  }, [toasts])
 
   return {
     toast,
-    toasts: toastState.toasts,
-    dismiss: (toastId: string) => {
-      toastState.toasts = toastState.toasts.filter(t => t.id !== toastId)
-      forceUpdate({})
-    }
+    dismiss,
+    toasts,
   }
-} 
+}
+
+export default useToast 

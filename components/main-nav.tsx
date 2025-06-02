@@ -2,20 +2,34 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { useSession } from "@/hooks/use-session"
 import { cn } from "@/lib/utils"
 import { CalendarIcon, ArchiveIcon, BookOpenIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/auth"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function MainNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const session = useSession()
+  const [session, setSession] = useState<any>(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const handleSignOut = async () => {
-    await signOut(supabase)
+    await supabase.auth.signOut()
     router.push("/login")
   }
 
@@ -23,6 +37,11 @@ export function MainNav() {
     {
       name: "Dashboard",
       href: "/",
+      icon: CalendarIcon,
+    },
+    {
+      name: "Schedule",
+      href: "/schedule",
       icon: CalendarIcon,
     },
     {
@@ -58,7 +77,8 @@ export function MainNav() {
           </Link>
         ))}
       </div>
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center space-x-2">
+        <ThemeToggle />
         {session ? (
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             Sign Out

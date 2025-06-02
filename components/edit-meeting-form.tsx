@@ -1,40 +1,42 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createMeeting } from '@/app/actions'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { useToast } from '@/hooks/use-toast'
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import type { Meeting } from "@/lib/types"
+import { updateMeeting } from "@/app/actions"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 
-export default function NewMeetingPage() {
-  const [meetingDate, setMeetingDate] = useState('')
-  const [startTime, setStartTime] = useState('')
-  const [endTime, setEndTime] = useState('')
-  const [topic, setTopic] = useState('')
+interface EditMeetingFormProps {
+  meeting: Meeting
+}
+
+export function EditMeetingForm({ meeting }: EditMeetingFormProps) {
+  const [meetingDate, setMeetingDate] = useState(meeting.meeting_date)
+  const [startTime, setStartTime] = useState(meeting.start_time)
+  const [endTime, setEndTime] = useState(meeting.end_time)
+  const [topic, setTopic] = useState(meeting.topic_overview)
   const [isSaving, setIsSaving] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSaving(true)
     try {
-      const meeting = await createMeeting({
+      await updateMeeting(meeting.meeting_id, {
         meeting_date: meetingDate,
         start_time: startTime,
         end_time: endTime,
         topic_overview: topic,
       })
-      toast({ title: 'Meeting scheduled' })
+      toast({ title: "Meeting updated" })
       router.push(`/meetings/${meeting.meeting_id}`)
     } catch (err) {
-      toast({
-        title: 'Error scheduling meeting',
-        variant: 'destructive',
-      })
+      toast({ title: "Error updating meeting", variant: "destructive" })
     } finally {
       setIsSaving(false)
     }
@@ -43,8 +45,7 @@ export default function NewMeetingPage() {
   return (
     <div className="max-w-xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Schedule a New Meeting</h1>
-        <p className="text-muted-foreground">Enter details for your meeting.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Edit Meeting</h1>
       </div>
       <Card>
         <CardContent className="pt-6">
@@ -74,11 +75,10 @@ export default function NewMeetingPage() {
             <Textarea
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="Topic overview"
               required
             />
             <Button type="submit" disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Create Meeting'}
+              {isSaving ? "Saving..." : "Save Changes"}
             </Button>
           </form>
         </CardContent>
@@ -86,3 +86,4 @@ export default function NewMeetingPage() {
     </div>
   )
 }
+
