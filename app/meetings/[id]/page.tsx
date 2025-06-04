@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { getMeeting, getMeetingNotes, getQnAForMeeting } from "@/app/actions"
+import { getMeeting, getMeetingNotes } from "@/app/actions"
 import { formatDate } from "@/lib/utils"
 import { NotesEditor } from "@/components/notes-editor"
 import { Button } from "@/components/ui/button"
