@@ -2,7 +2,6 @@ import { notFound } from "next/navigation"
 import { getMeeting, getMeetingNotes, getQnAForMeeting } from "@/app/actions"
 import { formatDate } from "@/lib/utils"
 import { NotesEditor } from "@/components/notes-editor"
-import { QnASection } from "@/components/qna-section"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ArrowLeft, Clock, Calendar, Tag } from "lucide-react"
@@ -27,7 +26,6 @@ export default async function MeetingDetailPage({
   }
 
   const notes = await getMeetingNotes(meetingId)
-  const qnaEntries = await getQnAForMeeting(meetingId)
   
   // Determine if meeting is past or upcoming
   const isPastMeeting = new Date(meeting.meeting_date) < new Date()
