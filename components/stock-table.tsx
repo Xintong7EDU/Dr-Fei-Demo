@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { PlusIcon, EditIcon, TrashIcon, SaveIcon, XIcon } from 'lucide-react';
+import { PlusIcon, EditIcon, TrashIcon, SaveIcon, XIcon, ExternalLinkIcon } from 'lucide-react';
 import { createStock, updateStock, deleteStock } from '@/app/stocks/actions';
 import { useToastContext } from '@/hooks/use-toast-context';
 
@@ -27,6 +27,29 @@ const marketLabels = {
   TW: '台湾',
   CN: '中国',
   US: '美国'
+};
+
+/**
+ * Generate Yahoo Finance URL for a stock based on its market and code
+ * @param stock - The stock object containing code and market information
+ * @returns Yahoo Finance URL string
+ */
+const generateYahooFinanceUrl = (stock: DatabaseStock): string => {
+  const baseUrl = 'https://finance.yahoo.com/quote/';
+  
+  switch (stock.market) {
+    case 'US':
+      return `${baseUrl}${stock.code}`;
+    case 'TW':
+      // Taiwan stocks typically use .TW suffix
+      return `${baseUrl}${stock.code}.TW`;
+    case 'CN':
+      // Chinese stocks may use different suffixes depending on exchange
+      // Assuming Shanghai (.SS) for now, but could be customized
+      return `${baseUrl}${stock.code}.SS`;
+    default:
+      return `${baseUrl}${stock.code}`;
+  }
 };
 
 export function StockTable({ stocks, market, title }: StockTableProps) {
@@ -125,6 +148,11 @@ export function StockTable({ stocks, market, title }: StockTableProps) {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleYahooFinanceClick = (stock: DatabaseStock) => {
+    const url = generateYahooFinanceUrl(stock);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -253,6 +281,15 @@ export function StockTable({ stocks, market, title }: StockTableProps) {
                       </div>
                     ) : (
                       <div className="flex gap-2">
+                        <Button 
+                          onClick={() => handleYahooFinanceClick(stock)} 
+                          size="sm" 
+                          variant="outline"
+                          title="查看 Yahoo Finance"
+                          className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          <ExternalLinkIcon className="h-4 w-4" />
+                        </Button>
                         <Button onClick={() => handleEdit(stock)} size="sm" variant="outline">
                           <EditIcon className="h-4 w-4" />
                         </Button>

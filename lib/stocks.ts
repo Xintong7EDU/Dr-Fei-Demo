@@ -1,6 +1,11 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { DatabaseStock, Market, StockFormData } from '@/types/stock';
 
+// 新增接口定义
+export interface StockWithYahooLink extends DatabaseStock {
+  yahooFinanceUrl: string;
+}
+
 export class StocksService {
   constructor(private supabase: SupabaseClient) {}
 
@@ -107,5 +112,70 @@ export class StocksService {
     }
 
     return data;
+  }
+
+  /**
+   * Generate Yahoo Finance URL for a stock based on its market and code
+   * @param stock - The stock object containing code and market information
+   * @returns Yahoo Finance URL string
+   */
+  private generateYahooFinanceUrl(stock: DatabaseStock): string {
+    const baseUrl = 'https://finance.yahoo.com/quote/';
+    
+    switch (stock.market) {
+      case 'US':
+        return `${baseUrl}${stock.code}`;
+      case 'TW':
+        // Taiwan stocks typically use .TW suffix
+        return `${baseUrl}${stock.code}.TW`;
+      case 'CN':
+        // Chinese stocks may use different suffixes depending on exchange
+        // Assuming Shanghai (.SS) for now, but could be customized
+        return `${baseUrl}${stock.code}.SS`;
+      default:
+        return `${baseUrl}${stock.code}`;
+    }
+  }
+
+  /**
+   * Get all stocks with their Yahoo Finance URLs - like a TODO list
+   * @returns Array of stocks with Yahoo Finance URLs
+   */
+  async getStocksWithYahooLinks(): Promise<StockWithYahooLink[]> {
+    const stocks = await this.getAllStocks();
+    
+    return stocks.map(stock => ({
+      ...stock,
+      yahooFinanceUrl: this.generateYahooFinanceUrl(stock)
+    }));
+  }
+
+  /**
+   * Get stocks by market with their Yahoo Finance URLs
+   * @param market - The market to filter by
+   * @returns Array of stocks from the specified market with Yahoo Finance URLs
+   */
+  async getStocksByMarketWithYahooLinks(market: Market): Promise<StockWithYahooLink[]> {
+    const stocks = await this.getStocksByMarket(market);
+    
+    return stocks.map(stock => ({
+      ...stock,
+      yahooFinanceUrl: this.generateYahooFinanceUrl(stock)
+    }));
+  }
+
+  /**
+   * Get a single stock's Yahoo Finance URL
+   * @param code - Stock code
+   * @returns Yahoo Finance URL or null if stock not found
+   */
+  async getStockYahooFinanceUrl(code: string): Promise<string | null> {
+    const stock = await this.getStockByCode(code);
+    
+    if (!stock) {
+      return null;
+    }
+    
+    return this.generateYahooFinanceUrl(stock);
   }
 } 
