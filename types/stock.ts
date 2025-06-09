@@ -21,4 +21,17 @@ export interface StockFormData {
   name: string;
   englishName: string;
   market: Market;
+}
+
+export interface StockWithYahooLink extends DatabaseStock {
+  yahooFinanceUrl: string;
+}
+
+export interface StockWithRealTimeData extends DatabaseStock {
+  yahooFinanceUrl:string;
+  currentPrice?: number;
+  dayHigh?: number;
+  dayLow?: number;
+  fiftyTwoWeekHigh?: number;
+  fiftyTwoWeekLow?: number;
 } 

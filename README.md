@@ -42,3 +42,22 @@ Users can sign up and sign in with email and password. Authentication state is m
 2. Deploy your chats from the v0 interface
 3. Changes are automatically pushed to this repository
 4. Vercel deploys the latest version from this repository
+
+---
+
+## TODO
+
+### High Priority
+- [ ] **Refactor Chart Component**: Move `StockChartWidget` to its own file under `components/` for better modularity.
+- [ ] **Improve Chart Loading State**: Display a loading spinner or skeleton UI while the TradingView widget is initializing.
+- [ ] **Fix Chart Toggling**: Ensure that clicking a row toggles the chart visibility correctly without interfering with edit/delete buttons.
+
+### Medium Priority
+- [ ] **Add Stock Search/Filter**: Implement a search bar on the `StockTable` to filter stocks by code or name.
+- [ ] **Historical Data**: Fetch and display basic historical data (e.g., 52-week high/low) in the expanded view.
+- [ ] **Refine Yahoo Finance URL**: Improve `generateYahooFinanceUrl` for Chinese stocks to correctly differentiate between Shanghai (`.SS`) and Shenzhen (`.SZ`) exchanges. This might require adding an `exchange` field to the `stocks` table.
+
+### Low Priority
+- [ ] **User Watchlists**: Allow authenticated users to create and manage personal stock watchlists.
+- [ ] **Real-time Price Updates**: Investigate using WebSockets or a real-time data provider to show live price changes.
+- [ ] **Add Component Tests**: Write unit tests for the `StockTable` and `StockChartWidget` components.

@@ -1,10 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { DatabaseStock, Market, StockFormData } from '@/types/stock';
-
-// 新增接口定义
-export interface StockWithYahooLink extends DatabaseStock {
-  yahooFinanceUrl: string;
-}
+import { DatabaseStock, Market, StockFormData, StockWithYahooLink, StockWithRealTimeData } from '@/types/stock';
+import yahooFinance from 'yahoo-finance2';
 
 export class StocksService {
   constructor(private supabase: SupabaseClient) {}
@@ -177,5 +173,55 @@ export class StocksService {
     }
     
     return this.generateYahooFinanceUrl(stock);
+  }
+
+  private async _fetchRealTimeData(stockCode: string) {
+    try {
+      const quote = await yahooFinance.quote(stockCode);
+      return {
+        currentPrice: quote.regularMarketPrice,
+        dayHigh: quote.regularMarketDayHigh,
+        dayLow: quote.regularMarketDayLow,
+        fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
+        fiftyTwoWeekLow: quote.fiftyTwoWeekLow,
+      };
+    } catch (error) {
+      console.error(`Failed to fetch real-time data for ${stockCode}:`, error);
+      return {}; // Return empty object on failure
+    }
+  }
+
+  async getStocksWithRealTimeData(market: Market): Promise<StockWithRealTimeData[]> {
+    const stocksWithLinks = await this.getStocksByMarketWithYahooLinks(market);
+
+    const stocksWithRealTimeData = await Promise.all(
+      stocksWithLinks.map(async (stock) => {
+        const yahooCode = stock.yahooFinanceUrl.split('/').pop()!;
+        const realTimeData = await this._fetchRealTimeData(yahooCode);
+        return {
+          ...stock,
+          ...realTimeData,
+        };
+      })
+    );
+
+    return stocksWithRealTimeData;
+  }
+
+  async getStockWithRealTimeData(code: string): Promise<StockWithRealTimeData | null> {
+    const stock = await this.getStockByCode(code);
+    if (!stock) {
+      return null;
+    }
+
+    const yahooFinanceUrl = this.generateYahooFinanceUrl(stock);
+    const yahooCode = yahooFinanceUrl.split('/').pop()!;
+    const realTimeData = await this._fetchRealTimeData(yahooCode);
+
+    return {
+      ...stock,
+      yahooFinanceUrl,
+      ...realTimeData,
+    };
   }
 } 

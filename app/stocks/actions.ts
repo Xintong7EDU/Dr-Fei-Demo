@@ -2,14 +2,14 @@
 
 import { revalidatePath } from 'next/cache';
 import { supabase } from '@/lib/supabase';
-import { StocksService } from '@/lib/stocks';
+import { StocksService, StockWithRealTimeData } from '@/lib/stocks';
 import { DatabaseStock, Market, StockFormData } from '@/types/stock';
 
 const stocksService = new StocksService(supabase);
 
-export async function getStocksByMarket(market: Market): Promise<DatabaseStock[]> {
+export async function getStocksByMarket(market: Market): Promise<StockWithRealTimeData[]> {
   try {
-    return await stocksService.getStocksByMarket(market);
+    return await stocksService.getStocksWithRealTimeData(market);
   } catch (error) {
     console.error('Failed to fetch stocks by market:', error);
     throw error;

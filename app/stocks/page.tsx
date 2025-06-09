@@ -1,17 +1,15 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StockTable } from '@/components/stock-table';
-import { getAllStocks } from './actions';
-import { DatabaseStock } from '@/types/stock';
+import { getStocksByMarket } from './actions';
 import { MainNav } from '@/components/main-nav';
 
 export default async function StocksPage() {
   try {
-    const allStocks = await getAllStocks();
-    
-    // Group stocks by market
-    const taiwanStocks = allStocks.filter((stock: DatabaseStock) => stock.market === 'TW');
-    const chinaStocks = allStocks.filter((stock: DatabaseStock) => stock.market === 'CN');
-    const usStocks = allStocks.filter((stock: DatabaseStock) => stock.market === 'US');
+    const [taiwanStocks, chinaStocks, usStocks] = await Promise.all([
+      getStocksByMarket('TW'),
+      getStocksByMarket('CN'),
+      getStocksByMarket('US'),
+    ]);
 
     return (
       <div className="min-h-screen bg-background">
