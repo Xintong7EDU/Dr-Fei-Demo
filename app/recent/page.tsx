@@ -2,6 +2,7 @@ import { getMeetings } from "../actions"
 import { MeetingList } from "@/components/meeting-list"
 import { RecentMeetingsStats } from "@/components/recent-meetings-stats"
 import { RecentMeetingsFilters } from "@/components/recent-meetings-filters"
+import { RefreshButton } from "@/components/refresh-button"
 import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from "@/components/ui/motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -64,6 +65,12 @@ export default async function RecentMeetingsPage({
               View and manage your past meeting records and notes.
             </p>
           </div>
+          <RefreshButton 
+            variant="outline" 
+            size="default"
+            label="Refresh Data"
+            className="shadow-sm hover:shadow-md"
+          />
         </div>
       </FadeIn>
 
@@ -108,13 +115,20 @@ export default async function RecentMeetingsPage({
                   ({filteredMeetings.length} {filteredMeetings.length === 1 ? 'meeting' : 'meetings'})
                 </span>
               </CardTitle>
-              {filteredMeetings.length > 0 && (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/archive">
-                    View Archive
-                  </Link>
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                <RefreshButton 
+                  variant="outline" 
+                  size="sm"
+                  label="Refresh"
+                />
+                {filteredMeetings.length > 0 && (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/archive">
+                      View Archive
+                    </Link>
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>

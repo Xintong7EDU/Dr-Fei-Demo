@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { Meeting } from './types'
+import { getCurrentDateStringPST } from './utils'
 
 /**
  * Provides CRUD operations for the `meetings` table.
@@ -35,13 +36,13 @@ export class MeetingsService {
   }
 
   /**
-   * List upcoming or past meetings based on date.
+   * List upcoming or past meetings based on date in PST timezone.
    *
    * @param status - Whether to list `upcoming` or `past` meetings
    * @returns Array of meeting records
    */
   async list(status: 'upcoming' | 'past'): Promise<Meeting[]> {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getCurrentDateStringPST()
     let query = this.supabase
       .from('meetings')
       .select('*')

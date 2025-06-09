@@ -41,26 +41,6 @@ export function MainNav() {
       icon: CalendarIcon,
     },
     {
-      name: "Schedule",
-      href: "/schedule",
-      icon: CalendarIcon,
-    },
-    {
-      name: "Recent",
-      href: "/recent",
-      icon: ClockIcon,
-    },
-    {
-      name: "Archive",
-      href: "/archive",
-      icon: ArchiveIcon,
-    },
-    {
-      name: "Glossary",
-      href: "/glossary",
-      icon: BookOpenIcon,
-    },
-    {
       name: "Stocks",
       href: "/stocks",
       icon: BarChart,

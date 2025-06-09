@@ -5,6 +5,8 @@ import { cookies } from 'next/headers'
 import type { Meeting, MeetingNote, QnAEntry } from '@/lib/types'
 import { MeetingNotesService } from '@/lib/meeting-notes'
 import { MeetingsService } from '@/lib/meetings'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { getCurrentDateStringPST, getCurrentDatePST, getLastWeekDatePST, parseDatePST } from '@/lib/utils'
 
 async function createSupabaseServer() {
   const cookieStore = await cookies()
@@ -53,7 +55,7 @@ export async function getRecentMeetings(options?: {
   let query = supabase
     .from('meetings')
     .select('*')
-    .lt('meeting_date', new Date().toISOString().split('T')[0]) // Only past meetings
+    .lt('meeting_date', getCurrentDateStringPST()) // Only past meetings in PST
 
   // Apply search filter
   if (searchQuery) {
@@ -78,7 +80,7 @@ export async function getRecentMeetings(options?: {
 
 /**
  * Get meeting statistics for analytics
- * Provides real-time metrics from database
+ * Provides real-time metrics from database using PST timezone
  */
 export async function getMeetingStats(): Promise<{
   totalMeetings: number
@@ -90,11 +92,11 @@ export async function getMeetingStats(): Promise<{
 }> {
   const supabase = await createSupabaseServer()
   
-  // Get all past meetings
+  // Get all past meetings (using PST timezone)
   const { data: meetings, error } = await supabase
     .from('meetings')
     .select('*')
-    .lt('meeting_date', new Date().toISOString().split('T')[0])
+    .lt('meeting_date', getCurrentDateStringPST())
     .order('meeting_date', { ascending: false })
 
   if (error) throw error
@@ -102,20 +104,19 @@ export async function getMeetingStats(): Promise<{
   const meetingsData = meetings as Meeting[]
   const totalMeetings = meetingsData.length
 
-  // Calculate current month meetings
-  const currentDate = new Date()
+  // Calculate current month meetings (using PST timezone)
+  const currentDate = getCurrentDatePST()
   const currentMonth = currentDate.getMonth()
   const currentYear = currentDate.getFullYear()
   const thisMonthMeetings = meetingsData.filter((meeting) => {
-    const meetingDate = new Date(meeting.meeting_date)
+    const meetingDate = parseDatePST(meeting.meeting_date)
     return meetingDate.getMonth() === currentMonth && meetingDate.getFullYear() === currentYear
   }).length
 
-  // Calculate last week meetings
-  const lastWeekDate = new Date()
-  lastWeekDate.setDate(lastWeekDate.getDate() - 7)
+  // Calculate last week meetings (using PST timezone)
+  const lastWeekDate = getLastWeekDatePST()
   const lastWeekMeetings = meetingsData.filter((meeting) => {
-    const meetingDate = new Date(meeting.meeting_date)
+    const meetingDate = parseDatePST(meeting.meeting_date)
     return meetingDate >= lastWeekDate
   }).length
 
@@ -132,7 +133,7 @@ export async function getMeetingStats(): Promise<{
 
   // Find most active month
   const monthCounts = meetingsData.reduce((acc, meeting) => {
-    const date = new Date(meeting.meeting_date)
+    const date = parseDatePST(meeting.meeting_date)
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
     acc[monthKey] = (acc[monthKey] || 0) + 1
     return acc
@@ -227,4 +228,26 @@ export async function askQuestion(question: string, meetingId?: number): Promise
 
   if (error) throw error
   return data as QnAEntry
+}
+
+/**
+ * Revalidate meetings data across the application
+ * Forces fresh data fetch on next request
+ */
+export async function revalidateMeetings() {
+  try {
+    // Revalidate specific paths that display meetings data
+    revalidatePath('/recent')
+    revalidatePath('/meetings')
+    revalidatePath('/archive')
+    revalidatePath('/')
+    
+    // Revalidate any cached meeting data
+    revalidateTag('meetings')
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error revalidating meetings data:', error)
+    return { success: false, error: 'Failed to refresh data' }
+  }
 }

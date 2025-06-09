@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { Meeting } from "@/lib/types"
-import { formatDate } from "@/lib/utils"
+import { formatDate, formatTimeRange } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Clock } from "lucide-react"
 import { StaggerContainer, StaggerItem } from "@/components/ui/motion"
@@ -38,8 +38,7 @@ export function MeetingList({
                     <div className="flex items-center text-sm text-muted-foreground mt-1">
                       <Clock className="mr-2 h-3 w-3" />
                       <span>
-                        {formatDate(meeting.meeting_date)} • {meeting.start_time.substring(0, 5)} -{" "}
-                        {meeting.end_time.substring(0, 5)}
+                        {formatDate(meeting.meeting_date)} • {formatTimeRange(meeting.start_time, meeting.end_time)}
                       </span>
                     </div>
                   </div>

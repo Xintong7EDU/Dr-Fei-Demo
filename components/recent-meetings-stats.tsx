@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, TrendingUp, Archive } from "lucide-react"
 import type { Meeting } from "@/lib/types"
-import { formatDate } from "@/lib/utils"
+import { formatDate, getCurrentDatePST, getLastWeekDatePST, parseDatePST } from "@/lib/utils"
 
 interface RecentMeetingsStatsProps {
   meetings: Meeting[]
@@ -13,26 +13,26 @@ interface RecentMeetingsStatsProps {
 /**
  * Displays statistics and analytics for recent meetings
  * Syncs with database data to show real-time metrics
+ * All date calculations use PST timezone
  */
 export function RecentMeetingsStats({ meetings }: RecentMeetingsStatsProps) {
   // Calculate statistics from meetings data
   const totalMeetings = meetings.length
-  const currentDate = new Date()
-  const currentMonth = currentDate.getMonth()
-  const currentYear = currentDate.getFullYear()
+  const currentDatePST = getCurrentDatePST()
+  const currentMonth = currentDatePST.getMonth()
+  const currentYear = currentDatePST.getFullYear()
 
-  // Get meetings from this month
+  // Get meetings from this month (PST timezone)
   const thisMonthMeetings = meetings.filter((meeting) => {
-    const meetingDate = new Date(meeting.meeting_date)
+    const meetingDate = parseDatePST(meeting.meeting_date)
     return meetingDate.getMonth() === currentMonth && meetingDate.getFullYear() === currentYear
   })
 
-  // Get meetings from last 7 days
-  const lastWeekDate = new Date()
-  lastWeekDate.setDate(lastWeekDate.getDate() - 7)
+  // Get meetings from last 7 days (PST timezone)
+  const lastWeekDatePST = getLastWeekDatePST()
   const lastWeekMeetings = meetings.filter((meeting) => {
-    const meetingDate = new Date(meeting.meeting_date)
-    return meetingDate >= lastWeekDate
+    const meetingDate = parseDatePST(meeting.meeting_date)
+    return meetingDate >= lastWeekDatePST
   })
 
   // Calculate total meeting hours
