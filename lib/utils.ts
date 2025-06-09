@@ -15,7 +15,29 @@ export const PST_TIMEZONE = 'America/Los_Angeles'
  * @returns Date object representing current time in PST
  */
 export function getCurrentDatePST(): Date {
-  return new Date(new Date().toLocaleString("en-US", { timeZone: PST_TIMEZONE }))
+  const now = new Date()
+  
+  // Get the current time in PST using Intl.DateTimeFormat
+  const pstTime = new Intl.DateTimeFormat('en-US', {
+    timeZone: PST_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).formatToParts(now)
+  
+  // Extract date components
+  const year = parseInt(pstTime.find(p => p.type === 'year')?.value || '0')
+  const month = parseInt(pstTime.find(p => p.type === 'month')?.value || '0') - 1 // months are 0-indexed
+  const day = parseInt(pstTime.find(p => p.type === 'day')?.value || '0')
+  const hour = parseInt(pstTime.find(p => p.type === 'hour')?.value || '0')
+  const minute = parseInt(pstTime.find(p => p.type === 'minute')?.value || '0')
+  const second = parseInt(pstTime.find(p => p.type === 'second')?.value || '0')
+  
+  return new Date(year, month, day, hour, minute, second)
 }
 
 /**
@@ -23,8 +45,21 @@ export function getCurrentDatePST(): Date {
  * @returns Date string in YYYY-MM-DD format in PST
  */
 export function getCurrentDateStringPST(): string {
-  const pstDate = getCurrentDatePST()
-  return pstDate.toISOString().split('T')[0]
+  const now = new Date()
+  
+  // Use Intl.DateTimeFormatter to get PST date components
+  const pstTime = new Intl.DateTimeFormat('en-US', {
+    timeZone: PST_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(now)
+  
+  const year = pstTime.find(p => p.type === 'year')?.value
+  const month = pstTime.find(p => p.type === 'month')?.value
+  const day = pstTime.find(p => p.type === 'day')?.value
+  
+  return `${year}-${month}-${day}`
 }
 
 /**
@@ -124,8 +159,18 @@ export function getLastWeekDatePST(): Date {
  * @returns Date object in PST context
  */
 export function parseDatePST(dateString: string): Date {
-  // Add time to ensure it's interpreted as start of day in PST
-  return new Date(dateString + 'T00:00:00-08:00') // PST is UTC-8 (or UTC-7 during PDT)
+  // Create a proper PST date by using the timezone-aware formatter
+  const pstFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: PST_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+  
+  // Parse the input date and format it according to PST timezone
+  const inputDate = new Date(`${dateString}T12:00:00`)
+  const [month, day, year] = pstFormatter.format(inputDate).split('/')
+  return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
 }
 
 // Format a date string (YYYY-MM-DD) for HTML date input
@@ -136,4 +181,26 @@ export function formatDateForInput(dateString: string): string {
 // Format a time string (HH:MM:SS) for HTML time input (HH:MM)
 export function formatTimeForInput(timeString: string): string {
   return timeString.substring(0, 5); // Extract HH:MM from HH:MM:SS
+}
+
+/**
+ * Debug function to compare different timezone implementations
+ * This helps verify that our PST functions work correctly
+ */
+export function debugTimezone(): {
+  currentUTC: string
+  currentLocal: string
+  currentPST: string
+  currentPSTString: string
+  serverTimezone: string
+} {
+  const now = new Date()
+  
+  return {
+    currentUTC: now.toISOString(),
+    currentLocal: now.toString(),
+    currentPST: getCurrentDatePST().toString(),
+    currentPSTString: getCurrentDateStringPST(),
+    serverTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  }
 }
