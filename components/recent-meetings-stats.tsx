@@ -1,10 +1,9 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, TrendingUp, Archive } from "lucide-react"
 import type { Meeting } from "@/lib/types"
-import { formatDate, getCurrentDatePST, getLastWeekDatePST, parseDatePST } from "@/lib/utils"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar, Clock, TrendingUp, MapPin } from "lucide-react"
+import { getCurrentDateStringPST, parseDatePST, getLastWeekDatePST } from "@/lib/utils"
 
 interface RecentMeetingsStatsProps {
   meetings: Meeting[]
@@ -16,26 +15,23 @@ interface RecentMeetingsStatsProps {
  * All date calculations use PST timezone
  */
 export function RecentMeetingsStats({ meetings }: RecentMeetingsStatsProps) {
-  // Calculate statistics from meetings data
-  const totalMeetings = meetings.length
-  const currentDatePST = getCurrentDatePST()
-  const currentMonth = currentDatePST.getMonth()
-  const currentYear = currentDatePST.getFullYear()
-
-  // Get meetings from this month (PST timezone)
+  // Calculate current month meetings (using PST timezone)
+  const currentDate = new Date(getCurrentDateStringPST() + 'T00:00:00')
+  const currentMonth = currentDate.getMonth()
+  const currentYear = currentDate.getFullYear()
   const thisMonthMeetings = meetings.filter((meeting) => {
     const meetingDate = parseDatePST(meeting.meeting_date)
     return meetingDate.getMonth() === currentMonth && meetingDate.getFullYear() === currentYear
-  })
+  }).length
 
-  // Get meetings from last 7 days (PST timezone)
-  const lastWeekDatePST = getLastWeekDatePST()
+  // Calculate last week meetings (using PST timezone)
+  const lastWeekDate = getLastWeekDatePST()
   const lastWeekMeetings = meetings.filter((meeting) => {
     const meetingDate = parseDatePST(meeting.meeting_date)
-    return meetingDate >= lastWeekDatePST
-  })
+    return meetingDate >= lastWeekDate
+  }).length
 
-  // Calculate total meeting hours
+  // Calculate total hours and average duration
   const totalHours = meetings.reduce((total, meeting) => {
     const startTime = new Date(`1970-01-01 ${meeting.start_time}`)
     const endTime = new Date(`1970-01-01 ${meeting.end_time}`)
@@ -44,83 +40,84 @@ export function RecentMeetingsStats({ meetings }: RecentMeetingsStatsProps) {
     return total + durationHours
   }, 0)
 
-  // Find most recent meeting
-  const mostRecentMeeting = meetings.length > 0 ? meetings[0] : null
+  const averageDuration = meetings.length > 0 ? totalHours / meetings.length : 0
 
-  // Calculate average meeting duration
-  const averageDuration = totalMeetings > 0 ? totalHours / totalMeetings : 0
+  // Find most active month
+  const monthCounts = meetings.reduce((acc, meeting) => {
+    const date = parseDatePST(meeting.meeting_date)
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    acc[monthKey] = (acc[monthKey] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  const mostActiveMonthData = Object.entries(monthCounts).reduce(
+    (max, [month, count]) => count > max.count ? { month, count } : max,
+    { month: '', count: 0 }
+  )
+
+  const mostActiveMonth = mostActiveMonthData.month 
+    ? new Date(mostActiveMonthData.month + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+    : 'N/A'
+
+  const stats = [
+    {
+      title: "Total Meetings",
+      value: meetings.length.toString(),
+      icon: Calendar,
+      description: "All completed meetings"
+    },
+    {
+      title: "This Month",
+      value: thisMonthMeetings.toString(),
+      icon: TrendingUp,
+      description: `Meetings in ${currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
+    },
+    {
+      title: "Last 7 Days",
+      value: lastWeekMeetings.toString(),
+      icon: Clock,
+      description: "Recent meeting activity"
+    },
+    {
+      title: "Total Hours",
+      value: totalHours.toFixed(1),
+      icon: Clock,
+      description: `Avg ${averageDuration.toFixed(1)}h per meeting`
+    },
+    {
+      title: "Most Active Month",
+      value: mostActiveMonth,
+      icon: TrendingUp,
+      description: `${mostActiveMonthData.count} meeting${mostActiveMonthData.count !== 1 ? 's' : ''}`
+    }
+  ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {/* Total Meetings Card */}
-      <Card className="border-l-4 border-l-blue-500 hover:shadow-md transition-all">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Meetings</CardTitle>
-          <Archive className="h-4 w-4 text-blue-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{totalMeetings}</div>
-          <p className="text-xs text-muted-foreground">
-            {thisMonthMeetings.length} this month
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Recent Activity Card */}
-      <Card className="border-l-4 border-l-green-500 hover:shadow-md transition-all">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
-          <TrendingUp className="h-4 w-4 text-green-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{lastWeekMeetings.length}</div>
-          <p className="text-xs text-muted-foreground">
-            meetings last 7 days
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Total Hours Card */}
-      <Card className="border-l-4 border-l-purple-500 hover:shadow-md transition-all">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
-          <Clock className="h-4 w-4 text-purple-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{totalHours.toFixed(1)}h</div>
-          <p className="text-xs text-muted-foreground">
-            {averageDuration.toFixed(1)}h average duration
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Last Meeting Card */}
-      <Card className="border-l-4 border-l-orange-500 hover:shadow-md transition-all">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Last Meeting</CardTitle>
-          <Calendar className="h-4 w-4 text-orange-500" />
-        </CardHeader>
-        <CardContent>
-          {mostRecentMeeting ? (
-            <>
-              <div className="text-2xl font-bold">
-                {formatDate(mostRecentMeeting.meeting_date)}
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <Badge variant="secondary" className="text-xs">
-                  {mostRecentMeeting.topic_overview.substring(0, 20)}
-                  {mostRecentMeeting.topic_overview.length > 20 ? "..." : ""}
-                </Badge>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-2xl font-bold text-muted-foreground">-</div>
-              <p className="text-xs text-muted-foreground">No meetings yet</p>
-            </>
-          )}
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      {/* PST Timezone Notice */}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <MapPin className="h-3 w-3" />
+        <span>Statistics calculated using Pacific Standard Time (PST)</span>
+      </div>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        {stats.map((stat, index) => (
+          <Card key={index} className="shadow-sm hover:shadow-md transition-all">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.title}
+              </CardTitle>
+              <stat.icon className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stat.description}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 } 

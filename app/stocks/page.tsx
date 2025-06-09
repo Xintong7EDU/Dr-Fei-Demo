@@ -25,28 +25,28 @@ export default async function StocksPage() {
         {/* Main Content */}
         <div className="container mx-auto px-4 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">股票信息</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Stock Information</h1>
             <p className="text-muted-foreground">
-              管理台湾、中国大陆和美国的股票信息
+              Manage stock information for Taiwan, China, and US markets
             </p>
           </div>
 
           <Tabs defaultValue="tw" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="tw" className="flex items-center gap-2">
-                🇹🇼 台湾股市
+                🇹🇼 Taiwan Stock Market
                 <span className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs px-2 py-1 rounded-full">
                   {taiwanStocks.length}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="cn" className="flex items-center gap-2">
-                🇨🇳 中国股市
+                🇨🇳 China Stock Market
                 <span className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs px-2 py-1 rounded-full">
                   {chinaStocks.length}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="us" className="flex items-center gap-2">
-                🇺🇸 美国股市
+                🇺🇸 US Stock Market
                 <span className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs px-2 py-1 rounded-full">
                   {usStocks.length}
                 </span>
@@ -57,7 +57,7 @@ export default async function StocksPage() {
               <StockTable 
                 stocks={taiwanStocks}
                 market="TW"
-                title="台湾股票市场"
+                title="Taiwan Stock Market"
               />
             </TabsContent>
 
@@ -65,7 +65,7 @@ export default async function StocksPage() {
               <StockTable 
                 stocks={chinaStocks}
                 market="CN"
-                title="中国股票市场"
+                title="China Stock Market"
               />
             </TabsContent>
 
@@ -73,7 +73,7 @@ export default async function StocksPage() {
               <StockTable 
                 stocks={usStocks}
                 market="US"
-                title="美国股票市场"
+                title="US Stock Market"
               />
             </TabsContent>
           </Tabs>
@@ -92,9 +92,9 @@ export default async function StocksPage() {
 
         {/* Error Content */}
         <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-8">股票信息</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-8">Stock Information</h1>
           <div className="text-red-600 dark:text-red-400">
-            加载股票数据失败: {error instanceof Error ? error.message : '未知错误'}
+            Failed to load stock data: {error instanceof Error ? error.message : 'Unknown error'}
           </div>
         </div>
       </div>
