@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import type { Session } from "@supabase/auth-js"
 import { cn } from "@/lib/utils"
-import { CalendarIcon, ArchiveIcon, BookOpenIcon, ClockIcon } from "lucide-react"
+import { CalendarIcon, ArchiveIcon, BookOpenIcon, ClockIcon, BarChart } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -59,6 +59,11 @@ export function MainNav() {
       name: "Glossary",
       href: "/glossary",
       icon: BookOpenIcon,
+    },
+    {
+      name: "Stocks",
+      href: "/stocks",
+      icon: BarChart,
     },
   ]
 
