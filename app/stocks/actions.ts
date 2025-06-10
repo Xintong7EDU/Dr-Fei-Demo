@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { supabase } from '@/lib/supabase';
-import { StocksService, StockWithRealTimeData } from '@/lib/stocks';
-import { DatabaseStock, Market, StockFormData } from '@/types/stock';
+import { StocksService } from '@/lib/stocks';
+import { DatabaseStock, Market, StockFormData, StockWithRealTimeData } from '@/types/stock';
 
 const stocksService = new StocksService(supabase);
 
