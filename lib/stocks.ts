@@ -33,12 +33,24 @@ export class StocksService {
   }
 
   async createStock(stockData: StockFormData): Promise<DatabaseStock> {
+    let name = stockData.name || stockData.code;
+    let englishName = stockData.englishName || stockData.code;
+
+    try {
+      const ticker = this.getYahooTicker(stockData.code, stockData.market);
+      const quote = await yahooFinance.quote(ticker);
+      name = quote.longName || quote.shortName || stockData.code;
+      englishName = quote.shortName || name;
+    } catch (e) {
+      console.error(`Could not fetch stock data from Yahoo Finance for ${stockData.code}. Using provided data or code as name.`, e);
+    }
+
     const { data, error } = await this.supabase
       .from('stocks')
       .insert({
         code: stockData.code,
-        name: stockData.name,
-        english_name: stockData.englishName,
+        name,
+        english_name: englishName,
         market: stockData.market,
         updated_at: new Date().toISOString()
       })
@@ -110,6 +122,23 @@ export class StocksService {
     return data;
   }
 
+  private getYahooTicker(code: string, market: Market): string {
+    switch (market) {
+      case 'US':
+        return code;
+      case 'TW':
+        // Taiwan Stock Exchange uses .TW suffix.
+        return `${code}.TW`;
+      case 'CN':
+        // Shanghai Stock Exchange uses .SS suffix.
+        // Shenzhen Stock Exchange uses .SZ suffix.
+        // Defaulting to Shanghai.
+        return `${code}.SS`;
+      default:
+        return code;
+    }
+  }
+
   /**
    * Generate Yahoo Finance URL for a stock based on its market and code
    * @param stock - The stock object containing code and market information
@@ -117,24 +146,13 @@ export class StocksService {
    */
   private generateYahooFinanceUrl(stock: DatabaseStock): string {
     const baseUrl = 'https://finance.yahoo.com/quote/';
-    
-    switch (stock.market) {
-      case 'US':
-        return `${baseUrl}${stock.code}`;
-      case 'TW':
-        // Taiwan stocks typically use .TW suffix
-        return `${baseUrl}${stock.code}.TW`;
-      case 'CN':
-        // Chinese stocks may use different suffixes depending on exchange
-        // Assuming Shanghai (.SS) for now, but could be customized
-        return `${baseUrl}${stock.code}.SS`;
-      default:
-        return `${baseUrl}${stock.code}`;
-    }
+    const ticker = this.getYahooTicker(stock.code, stock.market);
+    return `${baseUrl}${ticker}`;
   }
 
   /**
-   * Get all stocks with their Yahoo Finance URLs - like a TODO list
+   * Get all stocks with their Yahoo Finance URLs.
+   * This can be used to display a list of stocks with links to more details.
    * @returns Array of stocks with Yahoo Finance URLs
    */
   async getStocksWithYahooLinks(): Promise<StockWithYahooLink[]> {

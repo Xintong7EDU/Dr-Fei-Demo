@@ -68,13 +68,16 @@ export function getCurrentDateStringPST(): string {
  * @returns Formatted date string in PST
  */
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString + 'T00:00:00')
+  const [year, month, day] = dateString.split('-').map(Number);
+  // Create a local date object without timezone conversion
+  // Since the database stores dates as intended for PST display, we treat them as local
+  const date = new Date(year, month - 1, day);
+  
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric',
-    timeZone: PST_TIMEZONE
-  })
+    day: 'numeric'
+  });
 }
 
 /**
@@ -84,15 +87,13 @@ export function formatDate(dateString: string): string {
  */
 export function formatTime(timeString: string): string {
   const [hours, minutes] = timeString.split(':')
-  const date = new Date()
-  date.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+  const date = new Date(2000, 0, 1, parseInt(hours), parseInt(minutes))
   
   return date.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
-    timeZone: PST_TIMEZONE,
-    timeZoneName: 'short'
-  })
+    hour12: true
+  }) + ' PST'
 }
 
 /**
@@ -103,18 +104,19 @@ export function formatTime(timeString: string): string {
  */
 export function formatTimeRange(startTime: string, endTime: string): string {
   const formatSingleTime = (timeString: string) => {
-    const [hours, minutes] = timeString.split(':')
-    const date = new Date()
-    date.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+    const [hours, minutes] = timeString.split(':');
+    // Create a date object and set the time directly without timezone conversion
+    // We want to display the time as-is since it's already stored in PST
+    const date = new Date(2000, 0, 1, parseInt(hours), parseInt(minutes));
     
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      timeZone: PST_TIMEZONE
-    })
-  }
+      hour12: true
+    });
+  };
   
-  return `${formatSingleTime(startTime)} - ${formatSingleTime(endTime)} PST`
+  return `${formatSingleTime(startTime)} - ${formatSingleTime(endTime)} PST`;
 }
 
 /**

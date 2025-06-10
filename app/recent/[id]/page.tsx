@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import { getMeeting, getMeetingNotes } from "@/app/actions"
-import { formatDate } from "@/lib/utils"
+import { formatDate, formatTimeRange } from "@/lib/utils"
 import { NotesEditor } from "@/components/notes-editor"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -44,8 +44,7 @@ export default async function MeetingDetailPage({
           <div className="flex items-center text-muted-foreground mt-1">
             <Clock className="mr-2 h-4 w-4" />
             <span>
-              {formatDate(meeting.meeting_date)} • {meeting.start_time.substring(0, 5)} -{" "}
-              {meeting.end_time.substring(0, 5)}
+              {formatDate(meeting.meeting_date)} • {formatTimeRange(meeting.start_time, meeting.end_time)}
             </span>
           </div>
         </div>
@@ -78,7 +77,7 @@ export default async function MeetingDetailPage({
               <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <h3 className="font-medium">Time</h3>
-                <p>{meeting.start_time.substring(0, 5)} - {meeting.end_time.substring(0, 5)}</p>
+                <p>{formatTimeRange(meeting.start_time, meeting.end_time)}</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
