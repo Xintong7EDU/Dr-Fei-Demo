@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
-import { MessageSquare, BarChart, Users, Calendar, Target, TrendingUp } from 'lucide-react'
+import { MessageSquare, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface PresetQuestionsProps {
