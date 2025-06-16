@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User, Session, AuthChangeEvent } from '@supabase/auth-js'
 import { supabase } from '@/lib/supabase'
@@ -19,6 +19,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loading: true,
   })
   const router = useRouter()
+  const authStateRef = useRef(authState)
+
+  // Keep ref updated with current state
+  useEffect(() => {
+    authStateRef.current = authState
+  }, [authState])
 
   // Initialize auth state and set up listener
   useEffect(() => {
@@ -76,14 +82,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
               router.push('/')
               break
             case 'SIGNED_OUT':
-              // Ensure complete state cleanup
-              setAuthState({
-                user: null,
-                session: null,
-                loading: false,
-              })
-              // Redirect to login after sign out
-              router.push('/login')
+              // Only update state if it's not already cleared
+              // (to avoid redundant updates from our immediate cleanup in signOut)
+              if (session || authStateRef.current.user) {
+                setAuthState({
+                  user: null,
+                  session: null,
+                  loading: false,
+                })
+                // Only redirect if we haven't already done so
+                if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+                  router.push('/login')
+                }
+              }
               break
             case 'TOKEN_REFRESHED':
               // Session refreshed successfully
@@ -156,24 +167,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Sign out function
   const signOut = useCallback(async () => {
     try {
-      setAuthState(prev => ({ ...prev, loading: true }))
+      // Immediately clear the auth state to prevent UI flickering
+      setAuthState({
+        user: null,
+        session: null,
+        loading: false,
+      })
       
+      // Perform the actual sign out
       const { error } = await supabase.auth.signOut()
       
       if (error) {
         console.error('Error signing out:', error)
-        // Even if Supabase sign out fails, clear local state for security
-        setAuthState({
-          user: null,
-          session: null,
-          loading: false,
-        })
-        // Still redirect to login for security
+        // Redirect to login regardless of error for security
         router.push('/login')
         return { error: new Error(error.message) }
       }
 
-      // Success - state will be updated by the auth listener
+      // Success - redirect will be handled by auth listener, but do it immediately too
+      router.push('/login')
       return { error: null }
     } catch (error) {
       console.error('Error signing out:', error)

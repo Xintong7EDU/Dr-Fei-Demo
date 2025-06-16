@@ -8,13 +8,18 @@ import { CalendarIcon, BarChart, MessageSquare, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 
 export function MainNav() {
   const pathname = usePathname()
   const { user, signOut, loading } = useAuth()
   const { toast } = useToast()
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
   const handleSignOut = async () => {
+    if (isSigningOut) return // Prevent multiple clicks
+    
+    setIsSigningOut(true)
     const { error } = await signOut()
     
     if (error) {
@@ -23,11 +28,13 @@ export function MainNav() {
         description: error.message,
         variant: 'destructive'
       })
+      setIsSigningOut(false) // Reset only on error
     } else {
       toast({
         title: 'Signed out successfully',
         description: 'You have been signed out of your account.'
       })
+      // Don't reset isSigningOut on success since we're redirecting
     }
   }
 
@@ -82,8 +89,13 @@ export function MainNav() {
               <User className="h-4 w-4" />
               <span>{user.email}</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              Sign Out
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleSignOut}
+              disabled={isSigningOut}
+            >
+              {isSigningOut ? 'Signing Out...' : 'Sign Out'}
             </Button>
           </div>
         ) : (
