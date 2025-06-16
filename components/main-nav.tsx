@@ -1,37 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import type { Session } from "@supabase/auth-js"
+import { usePathname } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 import { cn } from "@/lib/utils"
-import { CalendarIcon, BarChart, MessageSquare } from "lucide-react"
-import { supabase } from "@/lib/supabase"
+import { CalendarIcon, BarChart, MessageSquare, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export function MainNav() {
   const pathname = usePathname()
-  const router = useRouter()
-  const [session, setSession] = useState<Session | null>(null)
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    supabase.auth.getSession().then(({ data }: any) => setSession(data.session))
-    const {
-      data: { subscription },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      setSession(session)
-    })
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
+  const { user, signOut, loading } = useAuth()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
+    await signOut()
   }
 
   const navItems = [
@@ -58,31 +40,50 @@ export function MainNav() {
         <CalendarIcon className="h-6 w-6" />
         <span className="font-bold inline-block">Meeting Manager</span>
       </Link>
-      <div className="flex items-center space-x-4 ml-6">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center space-x-1 text-sm transition-colors hover:text-foreground/80",
-              pathname === item.href ? "text-foreground font-medium" : "text-foreground/60",
-            )}
-          >
-            <item.icon className="h-4 w-4" />
-            <span>{item.name}</span>
-          </Link>
-        ))}
-      </div>
+      {user && (
+        <div className="flex items-center space-x-4 ml-6">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center space-x-1 text-sm transition-colors hover:text-foreground/80",
+                pathname === item.href ? "text-foreground font-medium" : "text-foreground/60",
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+              <span>{item.name}</span>
+            </Link>
+          ))}
+        </div>
+      )}
       <div className="ml-auto flex items-center space-x-2">
         <ThemeToggle />
-        {session ? (
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            Sign Out
-          </Button>
+        {loading ? (
+          <div className="h-8 w-16 bg-muted rounded animate-pulse" />
+        ) : user ? (
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 text-sm text-foreground/60">
+              <User className="h-4 w-4" />
+              <span>{user.email}</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              Sign Out
+            </Button>
+          </div>
         ) : (
-          <Link href="/login" className="text-sm hover:underline">
-            Sign In
-          </Link>
+          <div className="flex items-center space-x-2">
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button variant="default" size="sm">
+                Sign Up
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
     </nav>

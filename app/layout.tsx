@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/toast-provider";
+import { AuthProvider } from "@/contexts/auth-context";
 import { MainNav } from "@/components/main-nav";
 
 const geistSans = Geist({
@@ -35,21 +36,23 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ToastProvider>
-            <div className="min-h-screen bg-background">
-              {/* Header with Navigation - kept across all pages */}
-              <header className="border-b">
-                <div className="container mx-auto px-4 py-4">
-                  <MainNav />
-                </div>
-              </header>
-              
-              {/* Main content area */}
-              <main className="flex-1">
-                {children}
-              </main>
-            </div>
-          </ToastProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <div className="min-h-screen bg-background">
+                {/* Header with Navigation - kept across all pages */}
+                <header className="border-b">
+                  <div className="container mx-auto px-4 py-4">
+                    <MainNav />
+                  </div>
+                </header>
+                
+                {/* Main content area */}
+                <main className="flex-1">
+                  {children}
+                </main>
+              </div>
+            </ToastProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

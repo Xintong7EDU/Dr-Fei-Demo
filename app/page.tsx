@@ -1,8 +1,13 @@
+"use client"
+
 import { MeetingList } from "@/components/meeting-list"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusIcon, BookOpenIcon, ArchiveIcon } from "lucide-react"
 import Link from "next/link"
-import { getMeetings } from "./actions"
+import { ProtectedRoute } from "@/components/auth/protected-route"
+import { useAuth } from "@/contexts/auth-context"
+import { useEffect, useState } from "react"
+import { Meeting } from "@/lib/types"
 import { 
   FadeIn, 
   SlideUp, 
@@ -11,9 +16,49 @@ import {
   HoverCard 
 } from "@/components/ui/motion"
 
-export default async function Home() {
-  const upcomingMeetings = await getMeetings("upcoming")
-  const recentMeetings = await getMeetings("past")
+function DashboardContent() {
+  const { user } = useAuth()
+  const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([])
+  const [recentMeetings, setRecentMeetings] = useState<Meeting[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        // Import getMeetings dynamically to avoid server-side issues
+        const { getMeetings } = await import("./actions")
+        const [upcoming, recent] = await Promise.all([
+          getMeetings("upcoming"),
+          getMeetings("past")
+        ])
+        setUpcomingMeetings(upcoming)
+        setRecentMeetings(recent)
+      } catch (error) {
+        console.error('Error fetching meetings:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user) {
+      fetchMeetings()
+    }
+  }, [user])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          <div className="h-8 bg-muted rounded animate-pulse" />
+          <div className="grid gap-6 md:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-32 bg-muted rounded animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -21,7 +66,7 @@ export default async function Home() {
       <FadeIn>
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2">
-            Welcome to Dr. Fei Note
+            Welcome back, {user?.email?.split('@')[0]}!
           </h1>
           <p className="text-muted-foreground text-lg">
             Your intelligent meeting management and note-taking platform
@@ -158,5 +203,24 @@ export default async function Home() {
         </div>
       </SlideUp>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <ProtectedRoute 
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center space-y-4">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto" />
+              <p className="text-muted-foreground">Loading your dashboard...</p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <DashboardContent />
+    </ProtectedRoute>
   )
 }
