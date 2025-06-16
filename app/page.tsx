@@ -127,7 +127,7 @@ export default async function Home() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold tracking-tight">Recent Meetings</h2>
             <Link 
-              href="/recent" 
+              href="/meetings?tab=past" 
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               View all →
@@ -137,7 +137,7 @@ export default async function Home() {
           <MeetingList
             meetings={recentMeetings}
             emptyMessage="No recent meetings found. Schedule your first meeting to get started."
-            linkBasePath="/recent"
+            linkBasePath="/meetings"
           />
         </SlideUp>
 

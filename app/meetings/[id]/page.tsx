@@ -35,7 +35,7 @@ export default async function MeetingDetailPage({
       {/* Header with back button and meeting title */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <Button variant="outline" size="icon" asChild className="w-10 h-10 rounded-full shadow-sm hover:shadow-md transition-all self-start">
-          <Link href="/" aria-label="Back to meetings">
+          <Link href="/meetings" aria-label="Back to meetings">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>

@@ -68,7 +68,7 @@ export function RecentMeetingsFilters({
         }
       })
 
-      router.push(`/recent?${params.toString()}`, { scroll: false })
+      router.push(`/meetings?${params.toString()}`, { scroll: false })
     },
     [router, searchParams]
   )
@@ -108,7 +108,7 @@ export function RecentMeetingsFilters({
   const handleClearFilters = useCallback(() => {
     setSearchValue("")
     setSelectedMonth("")
-    router.push("/recent", { scroll: false })
+    router.push("/meetings", { scroll: false })
   }, [router])
 
   // Sync local state with URL params

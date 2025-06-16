@@ -120,7 +120,7 @@ export default function NewMeetingPage() {
             asChild 
             className="hover:scale-105 transition-transform shadow-sm hover:shadow-md"
           >
-            <Link href="/recent" aria-label="Back to recent meetings">
+            <Link href="/meetings" aria-label="Back to meetings">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
@@ -303,7 +303,7 @@ export default function NewMeetingPage() {
                   asChild
                   size="lg"
                 >
-                  <Link href="/recent">Cancel</Link>
+                  <Link href="/meetings">Cancel</Link>
                 </Button>
               </div>
             </form>

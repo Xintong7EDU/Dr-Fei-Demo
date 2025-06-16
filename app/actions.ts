@@ -184,7 +184,6 @@ export async function deleteMeeting(id: number): Promise<boolean> {
   
   // Revalidate pages that display meetings
   revalidatePath('/meetings')
-  revalidatePath('/recent')
   revalidatePath('/')
   
   return result
@@ -250,7 +249,6 @@ export async function askQuestion(question: string, meetingId?: number): Promise
 export async function revalidateMeetings() {
   try {
     // Revalidate specific paths that display meetings data
-    revalidatePath('/recent')
     revalidatePath('/meetings')
     revalidatePath('/archive')
     revalidatePath('/')
