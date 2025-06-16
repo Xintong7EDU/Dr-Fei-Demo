@@ -3,8 +3,7 @@ import { MeetingList } from "@/components/meeting-list"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusIcon, BookOpenIcon, ArchiveIcon } from "lucide-react"
 import Link from "next/link"
-import { MeetingsService } from "@/lib/meetings"
-import { supabase } from "@/lib/supabase"
+import { getMeetings } from "./actions"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { 
   FadeIn, 
@@ -15,9 +14,8 @@ import {
 } from "@/components/ui/motion"
 
 export default async function Home() {
-  const meetingsService = new MeetingsService(supabase)
-  const upcomingMeetings = await meetingsService.list("upcoming")
-  const recentMeetings = await meetingsService.list("past")
+  const upcomingMeetings = await getMeetings("upcoming")
+  const recentMeetings = await getMeetings("past")
 
   return (
     <div className="min-h-screen bg-background">
