@@ -7,13 +7,28 @@ import { cn } from "@/lib/utils"
 import { CalendarIcon, BarChart, MessageSquare, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useToast } from "@/hooks/use-toast"
 
 export function MainNav() {
   const pathname = usePathname()
   const { user, signOut, loading } = useAuth()
+  const { toast } = useToast()
 
   const handleSignOut = async () => {
-    await signOut()
+    const { error } = await signOut()
+    
+    if (error) {
+      toast({
+        title: 'Sign out failed',
+        description: error.message,
+        variant: 'destructive'
+      })
+    } else {
+      toast({
+        title: 'Signed out successfully',
+        description: 'You have been signed out of your account.'
+      })
+    }
   }
 
   const navItems = [

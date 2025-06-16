@@ -9,7 +9,7 @@ export interface AuthState {
 export interface AuthContextType extends AuthState {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>
-  signOut: () => Promise<void>
+  signOut: () => Promise<{ error: Error | null }>
   refreshSession: () => Promise<void>
 }
 

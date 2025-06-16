@@ -76,6 +76,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
               router.push('/')
               break
             case 'SIGNED_OUT':
+              // Ensure complete state cleanup
+              setAuthState({
+                user: null,
+                session: null,
+                loading: false,
+              })
               // Redirect to login after sign out
               router.push('/login')
               break
@@ -151,13 +157,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = useCallback(async () => {
     try {
       setAuthState(prev => ({ ...prev, loading: true }))
-      await supabase.auth.signOut()
-      // State will be updated by the auth listener
+      
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.error('Error signing out:', error)
+        // Even if Supabase sign out fails, clear local state for security
+        setAuthState({
+          user: null,
+          session: null,
+          loading: false,
+        })
+        // Still redirect to login for security
+        router.push('/login')
+        return { error: new Error(error.message) }
+      }
+
+      // Success - state will be updated by the auth listener
+      return { error: null }
     } catch (error) {
       console.error('Error signing out:', error)
-      setAuthState(prev => ({ ...prev, loading: false }))
+      // Force clear local state even on exceptions for security
+      setAuthState({
+        user: null,
+        session: null,
+        loading: false,
+      })
+      // Still redirect to login for security
+      router.push('/login')
+      return { 
+        error: error instanceof Error ? error : new Error('An unexpected error occurred during sign out')
+      }
     }
-  }, [])
+  }, [router])
 
   // Refresh session function
   const refreshSession = useCallback(async () => {
