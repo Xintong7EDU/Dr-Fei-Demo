@@ -9,7 +9,11 @@ export default async function MeetingsPage() {
         <h1 className="text-3xl font-bold tracking-tight">All Meetings</h1>
         <p className="text-muted-foreground">Browse your scheduled meetings.</p>
       </div>
-      <MeetingList meetings={upcomingMeetings} emptyMessage="No meetings scheduled." />
+      <MeetingList 
+        meetings={upcomingMeetings} 
+        emptyMessage="No meetings scheduled." 
+        showDeleteButton={true}
+      />
     </div>
   )
 }

@@ -177,6 +177,19 @@ export async function updateMeeting(
   return meetingsSvc.update(id, updates)
 }
 
+export async function deleteMeeting(id: number): Promise<boolean> {
+  const supabase = await createSupabaseServer()
+  const meetingsSvc = new MeetingsService(supabase)
+  const result = await meetingsSvc.delete(id)
+  
+  // Revalidate pages that display meetings
+  revalidatePath('/meetings')
+  revalidatePath('/recent')
+  revalidatePath('/')
+  
+  return result
+}
+
 export async function getMeetingNotes(meetingId: number): Promise<MeetingNote | null> {
   const supabase = await createSupabaseServer()
   const notesSvc = new MeetingNotesService(supabase)

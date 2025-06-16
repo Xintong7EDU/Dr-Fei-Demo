@@ -180,6 +180,7 @@ export default async function RecentMeetingsPage({
                       : "No past meetings found. Your completed meetings will appear here."
                   }
                   linkBasePath="/recent"
+                  showDeleteButton={true}
                 />
               </StaggerItem>
             </StaggerContainer>

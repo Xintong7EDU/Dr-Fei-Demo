@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { ArrowLeft, Calendar, Clock, FileText, Plus } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { useToastContext } from '@/hooks/use-toast-context'
 import { getCurrentDateStringPST, formatDate } from '@/lib/utils'
 import { FadeIn, SlideUp } from '@/components/ui/motion'
 import Link from 'next/link'
@@ -21,7 +21,7 @@ export default function NewMeetingPage() {
   const [topic, setTopic] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
+  const { toast } = useToastContext()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +29,8 @@ export default function NewMeetingPage() {
     // Validation
     if (!meetingDate || !startTime || !endTime || !topic.trim()) {
       toast({
-        title: 'Please fill in all fields',
+        title: 'Validation Error',
+        description: 'Please fill in all fields',
         variant: 'destructive',
       })
       return
@@ -40,7 +41,8 @@ export default function NewMeetingPage() {
     const end = new Date(`1970-01-01 ${endTime}`)
     if (end <= start) {
       toast({
-        title: 'End time must be after start time',
+        title: 'Time Error',
+        description: 'End time must be after start time',
         variant: 'destructive',
       })
       return
@@ -56,7 +58,8 @@ export default function NewMeetingPage() {
       })
       toast({ 
         title: 'Meeting scheduled successfully',
-        description: `Meeting scheduled for ${formatDate(meetingDate)} at ${startTime} PST`
+        description: `Meeting scheduled for ${formatDate(meetingDate)} at ${startTime} PST`,
+        variant: 'success'
       })
       router.push(`/meetings/${meeting.meeting_id}`)
     } catch (error) {

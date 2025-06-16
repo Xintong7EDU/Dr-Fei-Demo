@@ -96,4 +96,20 @@ export class MeetingsService {
     if (error) throw error
     return data as Meeting
   }
+
+  /**
+   * Delete a meeting record.
+   *
+   * @param meetingId - Identifier of the meeting to delete
+   * @returns True if deletion was successful
+   */
+  async delete(meetingId: number): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('meetings')
+      .delete()
+      .eq('meeting_id', meetingId)
+
+    if (error) throw error
+    return true
+  }
 }
