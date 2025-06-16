@@ -15,38 +15,36 @@ export class AIService {
   }
 
   /**
-   * Generate a concise summary of meeting notes
-   * @param noteContent - The full meeting notes content
-   * @returns A concise summary of the notes
+   * Send a message to the AI with meeting context
+   * @param message - The user's message
+   * @param meetingContexts - Array of meeting contexts to include
+   * @returns AI response
    */
-  async generateMeetingSummary(noteContent: string): Promise<string> {
+  async sendMessage(
+    message: string, 
+    meetingContexts: MeetingContext[] = []
+  ): Promise<string> {
     try {
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: `You are an expert at summarizing meeting notes. Create a concise, well-structured summary that captures:
-            - Key decisions made
-            - Action items and assignments
-            - Important discussion points
-            - Next steps
-
-            Keep the summary professional and under 200 words. Use bullet points when appropriate.`
+            content: this.buildSystemPrompt(meetingContexts)
           },
           {
             role: 'user',
-            content: `Please summarize these meeting notes:\n\n${noteContent}`
+            content: message
           }
         ],
-        max_tokens: 300,
-        temperature: 0.3
+        max_tokens: 1000,
+        temperature: 0.7
       })
 
-      return completion.choices[0]?.message?.content || 'Summary could not be generated.'
+      return completion.choices[0]?.message?.content || 'I apologize, but I was unable to generate a response.'
     } catch (error) {
-      console.error('Error generating meeting summary:', error)
-      throw new Error('Failed to generate meeting summary')
+      console.error('Error sending message to AI:', error)
+      throw new Error('Failed to get AI response')
     }
   }
 
@@ -146,10 +144,8 @@ export class AIService {
         prompt += `- Time: ${context.meeting.start_time} - ${context.meeting.end_time}\n`
         prompt += `- Topic: ${context.meeting.topic_overview}\n`
         
-        if (context.summary) {
-          prompt += `- Summary: ${context.summary}\n`
-        } else if (context.notes?.note_content) {
-          // If no summary, include truncated notes
+        if (context.notes?.note_content) {
+          // Include truncated notes
           const truncatedNotes = context.notes.note_content.length > 500 
             ? context.notes.note_content.substring(0, 500) + '...'
             : context.notes.note_content

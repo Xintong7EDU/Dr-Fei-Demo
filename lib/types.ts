@@ -11,8 +11,6 @@ export interface MeetingNote {
   note_id: number
   meeting_id: number
   note_content: string
-  summary?: string
-  summary_generated_at?: string
 }
 
 export interface QnAEntry {
@@ -43,5 +41,4 @@ export interface ChatSession {
 export interface MeetingContext {
   meeting: Meeting
   notes?: MeetingNote
-  summary?: string
 }

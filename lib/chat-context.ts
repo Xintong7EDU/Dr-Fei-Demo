@@ -14,14 +14,12 @@ interface MeetingWithNotes {
   meeting_notes: Array<{
     note_id: number
     note_content: string
-    summary?: string
-    summary_generated_at?: string
   }>
 }
 
 /**
  * Service for preparing meeting context for AI chat
- * Combines meeting data and notes for optimal AI consumption
+ * Fetches and formats meeting data for AI consumption
  */
 export class ChatContextService {
   private supabase: SupabaseClient
@@ -37,7 +35,7 @@ export class ChatContextService {
   /**
    * Prepare meeting context for a single meeting
    * @param meetingId - The ID of the meeting
-   * @returns Meeting context with notes and summary
+   * @returns Meeting context with notes
    */
   async prepareSingleMeetingContext(meetingId: number): Promise<MeetingContext | null> {
     try {
@@ -50,8 +48,7 @@ export class ChatContextService {
 
       return {
         meeting,
-        notes: notes || undefined,
-        summary: notes?.summary || undefined
+        notes: notes || undefined
       }
     } catch (error) {
       console.error('Error preparing single meeting context:', error)
@@ -60,52 +57,58 @@ export class ChatContextService {
   }
 
   /**
-   * Prepare context for multiple meetings
-   * @param meetingIds - Array of meeting IDs to include
+   * Prepare meeting context for multiple meetings
+   * @param meetingIds - Array of meeting IDs
    * @returns Array of meeting contexts
    */
-  async prepareMeetingContexts(meetingIds: number[]): Promise<MeetingContext[]> {
-    if (meetingIds.length === 0) return []
-
+  async prepareMultipleMeetingContexts(meetingIds: number[]): Promise<MeetingContext[]> {
     try {
-      const contexts = await Promise.all(
-        meetingIds.map(id => this.prepareSingleMeetingContext(id))
-      )
+      const contexts: MeetingContext[] = []
+      
+      for (const meetingId of meetingIds) {
+        const context = await this.prepareSingleMeetingContext(meetingId)
+        if (context) {
+          contexts.push(context)
+        }
+      }
 
-      // Filter out null results and return valid contexts
-      return contexts.filter((context): context is MeetingContext => context !== null)
+      return contexts
     } catch (error) {
-      console.error('Error preparing meeting contexts:', error)
+      console.error('Error preparing multiple meeting contexts:', error)
       return []
     }
   }
 
   /**
-   * Get recent meetings with notes for context suggestions
-   * @param limit - Number of recent meetings to fetch
-   * @returns Array of meeting contexts sorted by date
+   * Prepare context from recent meetings (default: last 5)
+   * @param limit - Number of recent meetings to include
+   * @returns Array of meeting contexts from recent meetings
    */
-  async getRecentMeetingsWithNotes(limit: number = 10): Promise<MeetingContext[]> {
+  async prepareRecentMeetingContexts(limit: number = 5): Promise<MeetingContext[]> {
     try {
-      const { data: recentMeetings, error } = await this.supabase
+      // Get recent meetings with notes using joins for efficiency
+      const { data: meetingsWithNotes, error } = await this.supabase
         .from('meetings')
         .select(`
-          *,
-          meeting_notes (
+          meeting_id,
+          meeting_date,
+          start_time,
+          end_time,
+          topic_overview,
+          meeting_link,
+          meeting_notes!inner (
             note_id,
-            note_content,
-            summary,
-            summary_generated_at
+            note_content
           )
         `)
         .order('meeting_date', { ascending: false })
-        .order('start_time', { ascending: false })
         .limit(limit)
 
       if (error) throw error
-      if (!recentMeetings) return []
 
-      return recentMeetings.map((meeting: MeetingWithNotes) => ({
+      const meetings = meetingsWithNotes as MeetingWithNotes[]
+      
+      return meetings.map((meeting) => ({
         meeting: {
           meeting_id: meeting.meeting_id,
           meeting_date: meeting.meeting_date,
@@ -114,45 +117,72 @@ export class ChatContextService {
           topic_overview: meeting.topic_overview,
           meeting_link: meeting.meeting_link
         },
-        notes: meeting.meeting_notes[0] || undefined,
-        summary: meeting.meeting_notes[0]?.summary || undefined
+        notes: meeting.meeting_notes[0] ? {
+          note_id: meeting.meeting_notes[0].note_id,
+          meeting_id: meeting.meeting_id,
+          note_content: meeting.meeting_notes[0].note_content
+        } : undefined
       }))
     } catch (error) {
-      console.error('Error getting recent meetings with notes:', error)
+      console.error('Error preparing recent meeting contexts:', error)
       return []
     }
   }
 
   /**
-   * Search meetings by topic or content
-   * @param searchQuery - Search term
-   * @param limit - Maximum number of results
-   * @returns Array of matching meeting contexts
+   * Prepare smart context based on query relevance
+   * Uses simple keyword matching to find relevant meetings
+   * @param query - The user's query to match against
+   * @param limit - Maximum number of meetings to return
+   * @returns Array of relevant meeting contexts
    */
-  async searchMeetingsForContext(searchQuery: string, limit: number = 5): Promise<MeetingContext[]> {
-    if (!searchQuery.trim()) return []
-
+  async prepareSmartContext(query: string, limit: number = 3): Promise<MeetingContext[]> {
     try {
-      // Search in meeting topics and note content
-      const { data: searchResults, error } = await this.supabase
+      const keywords = query.toLowerCase().split(' ').filter(word => word.length > 2)
+      
+      if (keywords.length === 0) {
+        return this.prepareRecentMeetingContexts(limit)
+      }
+
+      // Search meetings by topic and notes content
+      const { data: meetingsWithNotes, error } = await this.supabase
         .from('meetings')
         .select(`
-          *,
+          meeting_id,
+          meeting_date,
+          start_time,
+          end_time,
+          topic_overview,
+          meeting_link,
           meeting_notes (
             note_id,
-            note_content,
-            summary,
-            summary_generated_at
+            note_content
           )
         `)
-        .or(`topic_overview.ilike.%${searchQuery}%,meeting_notes.note_content.ilike.%${searchQuery}%`)
         .order('meeting_date', { ascending: false })
-        .limit(limit)
 
       if (error) throw error
-      if (!searchResults) return []
 
-      return searchResults.map((meeting: MeetingWithNotes) => ({
+      const meetings = meetingsWithNotes as MeetingWithNotes[]
+
+      // Score meetings based on keyword matches
+      const scoredMeetings = meetings
+        .map((meeting) => {
+          let score = 0
+          const searchText = `${meeting.topic_overview} ${meeting.meeting_notes[0]?.note_content || ''}`.toLowerCase()
+          
+          keywords.forEach(keyword => {
+            const matches = (searchText.match(new RegExp(keyword, 'g')) || []).length
+            score += matches
+          })
+
+          return { meeting, score }
+        })
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+
+      return scoredMeetings.map(({ meeting }) => ({
         meeting: {
           meeting_id: meeting.meeting_id,
           meeting_date: meeting.meeting_date,
@@ -161,12 +191,15 @@ export class ChatContextService {
           topic_overview: meeting.topic_overview,
           meeting_link: meeting.meeting_link
         },
-        notes: meeting.meeting_notes[0] || undefined,
-        summary: meeting.meeting_notes[0]?.summary || undefined
+        notes: meeting.meeting_notes[0] ? {
+          note_id: meeting.meeting_notes[0].note_id,
+          meeting_id: meeting.meeting_id,
+          note_content: meeting.meeting_notes[0].note_content
+        } : undefined
       }))
     } catch (error) {
-      console.error('Error searching meetings for context:', error)
-      return []
+      console.error('Error preparing smart context:', error)
+      return this.prepareRecentMeetingContexts(limit)
     }
   }
 
@@ -184,10 +217,8 @@ export class ChatContextService {
         `${context.meeting.topic_overview} ${context.meeting.meeting_date}`
       )
 
-      // Summary or notes tokens
-      if (context.summary) {
-        totalEstimate += this.estimateTextTokens(context.summary)
-      } else if (context.notes?.note_content) {
+      // Notes tokens
+      if (context.notes?.note_content) {
         totalEstimate += this.estimateTextTokens(context.notes.note_content)
       }
     }
@@ -196,130 +227,124 @@ export class ChatContextService {
   }
 
   /**
-   * Optimize context for token limits
-   * @param contexts - Array of meeting contexts
-   * @param maxTokens - Maximum allowed tokens
-   * @returns Optimized array of contexts
+   * Prepare meeting context with token limits
+   * @param meetingIds - Array of meeting IDs
+   * @param maxTokens - Maximum tokens to include (approximate)
+   * @returns Optimized meeting contexts within token limit
    */
-  optimizeContextForTokens(contexts: MeetingContext[], maxTokens: number = 3000): MeetingContext[] {
-    const optimized: MeetingContext[] = []
-    let currentTokens = 0
-
-    // Sort by date (most recent first) to prioritize recent meetings
-    const sortedContexts = contexts.sort((a, b) => 
-      new Date(b.meeting.meeting_date).getTime() - new Date(a.meeting.meeting_date).getTime()
-    )
-
-    for (const context of sortedContexts) {
-      const contextTokens = this.estimateContextTokens([context])
-      
-      if (currentTokens + contextTokens <= maxTokens) {
-        optimized.push(context)
-        currentTokens += contextTokens
-      } else {
-        // Try to include truncated version if it's the first context
-        if (optimized.length === 0) {
-          const truncatedContext = this.truncateContext(context, maxTokens)
-          optimized.push(truncatedContext)
-          break
-        } else {
-          break
-        }
-      }
-    }
-
-    return optimized
-  }
-
-  /**
-   * Get meeting contexts for a specific date range
-   * @param startDate - Start date (YYYY-MM-DD)
-   * @param endDate - End date (YYYY-MM-DD)
-   * @returns Array of meeting contexts in date range
-   */
-  async getMeetingContextsByDateRange(startDate: string, endDate: string): Promise<MeetingContext[]> {
+  async prepareOptimizedContext(
+    meetingIds: number[], 
+    maxTokens: number = 2000
+  ): Promise<MeetingContext[]> {
     try {
-      const { data: meetings, error } = await this.supabase
+      // Get meetings with notes using joins
+      const { data: meetingsWithNotes, error } = await this.supabase
         .from('meetings')
         .select(`
-          *,
+          meeting_id,
+          meeting_date,
+          start_time,
+          end_time,
+          topic_overview,
+          meeting_link,
           meeting_notes (
             note_id,
-            note_content,
-            summary,
-            summary_generated_at
+            note_content
           )
         `)
-        .gte('meeting_date', startDate)
-        .lte('meeting_date', endDate)
+        .in('meeting_id', meetingIds)
         .order('meeting_date', { ascending: false })
 
       if (error) throw error
-      if (!meetings) return []
 
-      return meetings.map((meeting: MeetingWithNotes) => ({
-        meeting: {
-          meeting_id: meeting.meeting_id,
-          meeting_date: meeting.meeting_date,
-          start_time: meeting.start_time,
-          end_time: meeting.end_time,
-          topic_overview: meeting.topic_overview,
-          meeting_link: meeting.meeting_link
-        },
-        notes: meeting.meeting_notes[0] || undefined,
-        summary: meeting.meeting_notes[0]?.summary || undefined
-      }))
+      const meetings = meetingsWithNotes as MeetingWithNotes[]
+      const contexts: MeetingContext[] = []
+      let currentTokens = 0
+
+      for (const meeting of meetings) {
+        const context: MeetingContext = {
+          meeting: {
+            meeting_id: meeting.meeting_id,
+            meeting_date: meeting.meeting_date,
+            start_time: meeting.start_time,
+            end_time: meeting.end_time,
+            topic_overview: meeting.topic_overview,
+            meeting_link: meeting.meeting_link
+          },
+          notes: meeting.meeting_notes[0] ? {
+            note_id: meeting.meeting_notes[0].note_id,
+            meeting_id: meeting.meeting_id,
+            note_content: meeting.meeting_notes[0].note_content
+          } : undefined
+        }
+
+        const contextTokens = this.estimateContextTokens([context])
+        
+        if (currentTokens + contextTokens <= maxTokens) {
+          contexts.push(context)
+          currentTokens += contextTokens
+        } else {
+          // Try to include a truncated version
+          const truncatedContext = this.truncateContext(context, maxTokens - currentTokens)
+          if (truncatedContext) {
+            contexts.push(truncatedContext)
+          }
+          break
+        }
+      }
+
+      return contexts
     } catch (error) {
-      console.error('Error getting meetings by date range:', error)
+      console.error('Error preparing optimized context:', error)
       return []
     }
   }
 
   /**
-   * Simple token estimation (rough approximation)
-   * @param text - Text to estimate
-   * @returns Estimated token count
+   * Truncate a meeting context to fit within token limits
+   * @param context - Original meeting context
+   * @param availableTokens - Available token budget
+   * @returns Truncated context or null if can't fit
    */
-  private estimateTextTokens(text: string): number {
-    // Rough estimation: ~4 characters per token
-    return Math.ceil(text.length / 4)
-  }
+  private truncateContext(context: MeetingContext, availableTokens: number): MeetingContext | null {
+    // Always include basic meeting info
+    const basicInfo = {
+      meeting: context.meeting,
+      notes: undefined
+    }
+    
+    const basicTokens = this.estimateContextTokens([basicInfo])
+    if (basicTokens > availableTokens) {
+      return null // Can't even fit basic info
+    }
 
-  /**
-   * Truncate context to fit within token limits
-   * @param context - Meeting context to truncate
-   * @param maxTokens - Maximum allowed tokens
-   * @returns Truncated context
-   */
-  private truncateContext(context: MeetingContext, maxTokens: number): MeetingContext {
+    const remainingTokens = availableTokens - basicTokens
     const truncatedContext = { ...context }
 
-    // Always keep the meeting basic info
-    const basicInfoTokens = this.estimateTextTokens(
-      `${context.meeting.topic_overview} ${context.meeting.meeting_date}`
-    )
-
-    const availableTokens = maxTokens - basicInfoTokens
-
-    if (context.summary) {
-      const summaryTokens = this.estimateTextTokens(context.summary)
-      if (summaryTokens <= availableTokens) {
-        // Keep full summary
+    if (context.notes?.note_content) {
+      const noteTokens = this.estimateTextTokens(context.notes.note_content)
+      if (noteTokens <= remainingTokens) {
+        // Keep full notes
         return truncatedContext
       } else {
-        // Truncate summary
-        const maxChars = availableTokens * 4
-        truncatedContext.summary = context.summary.substring(0, maxChars) + '...'
-        truncatedContext.notes = undefined
-      }
-    } else if (context.notes?.note_content) {
-      const maxChars = availableTokens * 4
-      truncatedContext.notes = {
-        ...context.notes,
-        note_content: context.notes.note_content.substring(0, maxChars) + '...'
+        // Truncate notes
+        const maxChars = Math.floor((context.notes.note_content.length * remainingTokens) / noteTokens)
+        truncatedContext.notes = {
+          ...context.notes,
+          note_content: context.notes.note_content.substring(0, maxChars) + '...'
+        }
       }
     }
 
     return truncatedContext
+  }
+
+  /**
+   * Simple token estimation (roughly 4 characters per token)
+   * @param text - Text to estimate tokens for
+   * @returns Estimated token count
+   */
+  private estimateTextTokens(text: string): number {
+    return Math.ceil(text.length / 4)
   }
 } 

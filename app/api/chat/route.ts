@@ -56,10 +56,7 @@ export async function POST(request: NextRequest) {
     // Prepare meeting context if meeting IDs are provided
     let meetingContexts: MeetingContext[] = []
     if (meetingIds.length > 0) {
-      meetingContexts = await contextService.prepareMeetingContexts(meetingIds)
-      
-      // Optimize context for token limits
-      meetingContexts = contextService.optimizeContextForTokens(meetingContexts, 3000)
+      meetingContexts = await contextService.prepareOptimizedContext(meetingIds, 3000)
     }
 
     if (stream) {
