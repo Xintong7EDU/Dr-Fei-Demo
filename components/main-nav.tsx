@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { cn } from "@/lib/utils"
-import { CalendarIcon, BarChart, MessageSquare, User } from "lucide-react"
+import { CalendarIcon, BarChart, MessageSquare, User, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useToast } from "@/hooks/use-toast"
@@ -53,6 +53,11 @@ export function MainNav() {
       name: "Stocks",
       href: "/stocks",
       icon: BarChart,
+    },
+    {
+      name: "Posts",
+      href: "/posts",
+      icon: FileText,
     },
   ]
 
