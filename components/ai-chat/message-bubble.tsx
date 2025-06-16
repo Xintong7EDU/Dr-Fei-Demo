@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { ChatMessage } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { MarkdownText } from '@/lib/markdown-utils'
 import { Bot, User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
@@ -37,8 +38,18 @@ export const MessageBubble = memo(function MessageBubble({
         isUser && "bg-blue-500 text-white ml-auto",
         isAssistant && "bg-muted border"
       )}>
-        <div className="whitespace-pre-wrap break-words">
-          {message.content}
+        {/* Render content with markdown for assistant, plain text for user */}
+        <div className={cn(
+          "break-words",
+          isUser && "whitespace-pre-wrap"
+        )}>
+          {isAssistant ? (
+            <MarkdownText className="text-sm">
+              {message.content}
+            </MarkdownText>
+          ) : (
+            message.content
+          )}
         </div>
         
         {/* Timestamp */}

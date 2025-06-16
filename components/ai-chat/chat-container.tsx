@@ -6,6 +6,7 @@ import { MessageBubble } from './message-bubble'
 import { ChatInput } from './chat-input'
 import { TypingIndicator } from './typing-indicator'
 import { MeetingContextSelector } from './meeting-context-selector'
+import { PresetQuestions } from './preset-questions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -308,7 +309,16 @@ export function ChatContainer({
         </div>
 
         {/* Chat Input */}
-        <div className="border-t pt-4">
+        <div className="border-t pt-4 space-y-4">
+          {/* Show preset questions when there are no messages or when it makes sense */}
+          {(messages.length === 0 || (messages.length <= 2 && meetingIds.length > 0)) && (
+            <PresetQuestions
+              onQuestionClick={handleSendMessage}
+              disabled={isLoading}
+              meetingIds={meetingIds}
+            />
+          )}
+          
           <ChatInput 
             onSendMessage={handleSendMessage}
             disabled={isLoading}

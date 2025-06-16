@@ -14,39 +14,39 @@ export class AIService {
     })
   }
 
-  /**
-   * Send a message to the AI with meeting context
-   * @param message - The user's message
-   * @param meetingContexts - Array of meeting contexts to include
-   * @returns AI response
-   */
-  async sendMessage(
-    message: string, 
-    meetingContexts: MeetingContext[] = []
-  ): Promise<string> {
-    try {
-      const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: this.buildSystemPrompt(meetingContexts)
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.7
-      })
+//   /**
+//    * Send a message to the AI with meeting context
+//    * @param message - The user's message
+//    * @param meetingContexts - Array of meeting contexts to include
+//    * @returns AI response
+//    */
+//   async sendMessage(
+//     message: string, 
+//     meetingContexts: MeetingContext[] = []
+//   ): Promise<string> {
+//     try {
+//       const completion = await this.openai.chat.completions.create({
+//         model: 'gpt-4o-mini',
+//         messages: [
+//           {
+//             role: 'system',
+//             content: this.buildSystemPrompt(meetingContexts)
+//           },
+//           {
+//             role: 'user',
+//             content: message
+//           }
+//         ],
+//         max_tokens: 2000,
+//         temperature: 0.7
+//       })
 
-      return completion.choices[0]?.message?.content || 'I apologize, but I was unable to generate a response.'
-    } catch (error) {
-      console.error('Error sending message to AI:', error)
-      throw new Error('Failed to get AI response')
-    }
-  }
+//       return completion.choices[0]?.message?.content || 'I apologize, but I was unable to generate a response.'
+//     } catch (error) {
+//       console.error('Error sending message to AI:', error)
+//       throw new Error('Failed to get AI response')
+//     }
+//   }
 
   /**
    * Create a chat completion with meeting context
@@ -106,10 +106,10 @@ export class AIService {
       ]
 
       const stream = await this.openai.chat.completions.create({
-        model: 'gpt-4.1',
+        model: 'gpt-4o-mini',
         messages: openaiMessages,
         max_tokens: 2000,
-        temperature: 0.7,
+        temperature: 0.3,
         stream: true
       })
 
