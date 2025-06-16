@@ -4,7 +4,7 @@ import { formatDate, formatTimeRange, isPastMeetingPST } from "@/lib/utils"
 import { NotesEditor } from "@/components/notes-editor"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { ArrowLeft, Clock, Calendar, Tag } from "lucide-react"
+import { ArrowLeft, Clock, Calendar, Tag, Link as LinkIcon, ExternalLink } from "lucide-react"
 import Link from "next/link"
 
 export default async function MeetingDetailPage({
@@ -65,7 +65,7 @@ export default async function MeetingDetailPage({
       {/* Meeting details card */}
       <Card className="border-l-4 border-l-primary">
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="flex items-start space-x-3">
               <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
@@ -87,6 +87,23 @@ export default async function MeetingDetailPage({
                 <p className="line-clamp-2">{meeting.topic_overview}</p>
               </div>
             </div>
+            {meeting.meeting_link && (
+              <div className="flex items-start space-x-3">
+                <LinkIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <h3 className="font-medium">Meeting Link</h3>
+                  <a 
+                    href={meeting.meeting_link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline flex items-center gap-1 text-sm"
+                  >
+                    Join Meeting
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, Calendar, Clock, FileText, Plus } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, FileText, Plus, Link as LinkIcon } from 'lucide-react'
 import { useToastContext } from '@/hooks/use-toast-context'
 import { getCurrentDateStringPST, formatDate } from '@/lib/utils'
 import { FadeIn, SlideUp } from '@/components/ui/motion'
@@ -19,6 +19,7 @@ export default function NewMeetingPage() {
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
   const [topic, setTopic] = useState('')
+  const [meetingLink, setMeetingLink] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const router = useRouter()
   const { toast } = useToastContext()
@@ -30,7 +31,17 @@ export default function NewMeetingPage() {
     if (!meetingDate || !startTime || !endTime || !topic.trim()) {
       toast({
         title: 'Validation Error',
-        description: 'Please fill in all fields',
+        description: 'Please fill in all required fields',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validate meeting link if provided
+    if (meetingLink.trim() && !isValidUrl(meetingLink.trim())) {
+      toast({
+        title: 'Invalid Meeting Link',
+        description: 'Please enter a valid URL for the meeting link',
         variant: 'destructive',
       })
       return
@@ -55,6 +66,7 @@ export default function NewMeetingPage() {
         start_time: startTime,
         end_time: endTime,
         topic_overview: topic.trim(),
+        meeting_link: meetingLink.trim() || undefined,
       })
       toast({ 
         title: 'Meeting scheduled successfully',
@@ -71,6 +83,16 @@ export default function NewMeetingPage() {
       })
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  // Helper function to validate URLs
+  const isValidUrl = (string: string) => {
+    try {
+      new URL(string)
+      return true
+    } catch {
+      return false
     }
   }
 
@@ -238,6 +260,21 @@ export default function NewMeetingPage() {
                 <p className="text-xs text-muted-foreground">
                   {topic.length} characters
                 </p>
+              </div>
+
+              {/* Meeting Link Input */}
+              <div className="space-y-2">
+                <Label htmlFor="meeting-link" className="flex items-center gap-2">
+                  <LinkIcon className="h-4 w-4" />
+                  Meeting Link
+                </Label>
+                <Input
+                  id="meeting-link"
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  placeholder="Enter the meeting link..."
+                  className="text-base"
+                />
               </div>
 
               {/* Submit Button */}

@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS meetings (
   start_time time NOT NULL,
   end_time time NOT NULL,
   topic_overview text NOT NULL,
+  meeting_link text,
   created_at timestamp with time zone DEFAULT now()
 );
 

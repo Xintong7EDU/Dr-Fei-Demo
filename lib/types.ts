@@ -4,6 +4,7 @@ export interface Meeting {
   start_time: string
   end_time: string
   topic_overview: string
+  meeting_link?: string
 }
 
 export interface MeetingNote {
