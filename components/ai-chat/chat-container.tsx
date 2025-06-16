@@ -34,6 +34,7 @@ export function ChatContainer({
   const [showContextDetails, setShowContextDetails] = useState(true)
   const [meetingDetails, setMeetingDetails] = useState<MeetingContextDetails[]>([])
   const [loadingDetails, setLoadingDetails] = useState(false)
+  const [expandedNotes, setExpandedNotes] = useState<Set<number>>(new Set())
   
   const {
     messages,
@@ -75,6 +76,8 @@ export function ChatContainer({
             notes: detail.notes
           }))
         setMeetingDetails(validDetails)
+        // Reset expanded notes when meetings change
+        setExpandedNotes(new Set())
       } catch (err) {
         console.error('Failed to load meeting details:', err)
       } finally {
@@ -92,6 +95,18 @@ export function ChatContainer({
   const handleMeetingIdsChange = (ids: number[]) => {
     setMeetingIds(ids)
     setShowContextSelector(false)
+  }
+
+  const toggleNoteExpansion = (meetingId: number) => {
+    setExpandedNotes(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(meetingId)) {
+        newSet.delete(meetingId)
+      } else {
+        newSet.add(meetingId)
+      }
+      return newSet
+    })
   }
 
   const formatDate = (dateString: string) => {
@@ -226,13 +241,26 @@ export function ChatContainer({
                             
                             {notes?.note_content && (
                               <div className="space-y-2">
-                                <div className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                                  <FileText className="h-3 w-3" />
-                                  Meeting Notes
-                                </div>
-                                <div className="text-sm text-foreground bg-muted/50 p-3 rounded-md border max-h-96 overflow-y-auto whitespace-pre-wrap leading-relaxed">
-                                  {notes.note_content}
-                                </div>
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => toggleNoteExpansion(meeting.meeting_id)}
+                                  className="w-full justify-between p-2 h-auto text-xs font-medium text-muted-foreground hover:bg-muted/50"
+                                >
+                                  <div className="flex items-center gap-1">
+                                    <FileText className="h-3 w-3" />
+                                    Meeting Notes
+                                  </div>
+                                  {expandedNotes.has(meeting.meeting_id) ? 
+                                    <ChevronUp className="h-3 w-3" /> : 
+                                    <ChevronDown className="h-3 w-3" />
+                                  }
+                                </Button>
+                                
+                                {expandedNotes.has(meeting.meeting_id) && (
+                                  <div className="text-sm text-foreground bg-muted/50 p-3 rounded-md border max-h-96 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                                    {notes.note_content}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </CardContent>
