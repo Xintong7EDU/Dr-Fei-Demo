@@ -37,7 +37,7 @@ export class AIService {
             content: message
           }
         ],
-        max_tokens: 1000,
+        max_tokens: 2000,
         temperature: 0.7
       })
 
@@ -72,7 +72,7 @@ export class AIService {
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: openaiMessages,
-        max_tokens: 1000,
+        max_tokens: 2000,
         temperature: 0.7,
         stream: false
       })
@@ -106,9 +106,9 @@ export class AIService {
       ]
 
       const stream = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1',
         messages: openaiMessages,
-        max_tokens: 1000,
+        max_tokens: 2000,
         temperature: 0.7,
         stream: true
       })
@@ -145,11 +145,8 @@ export class AIService {
         prompt += `- Topic: ${context.meeting.topic_overview}\n`
         
         if (context.notes?.note_content) {
-          // Include truncated notes
-          const truncatedNotes = context.notes.note_content.length > 500 
-            ? context.notes.note_content.substring(0, 500) + '...'
-            : context.notes.note_content
-          prompt += `- Notes: ${truncatedNotes}\n`
+          // Include full notes content (no truncation here - let the context service handle optimization)
+          prompt += `- Notes: ${context.notes.note_content}\n`
         }
         prompt += '\n'
       })
@@ -159,35 +156,4 @@ export class AIService {
 
     return prompt
   }
-
-  /**
-   * Extract key topics from meeting notes
-   * @param noteContent - The meeting notes content
-   * @returns Array of key topics/themes
-   */
-  async extractKeyTopics(noteContent: string): Promise<string[]> {
-    try {
-      const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'Extract 3-5 key topics or themes from the following meeting notes. Return only the topics as a comma-separated list.'
-          },
-          {
-            role: 'user',
-            content: noteContent
-          }
-        ],
-        max_tokens: 100,
-        temperature: 0.3
-      })
-
-      const topics = completion.choices[0]?.message?.content
-      return topics ? topics.split(',').map(topic => topic.trim()) : []
-    } catch (error) {
-      console.error('Error extracting key topics:', error)
-      return []
-    }
-  }
-} 
+}

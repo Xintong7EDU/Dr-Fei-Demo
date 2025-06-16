@@ -234,7 +234,7 @@ export class ChatContextService {
    */
   async prepareOptimizedContext(
     meetingIds: number[], 
-    maxTokens: number = 2000
+    maxTokens: number = 8000
   ): Promise<MeetingContext[]> {
     try {
       // Get meetings with notes using joins
@@ -340,11 +340,11 @@ export class ChatContextService {
   }
 
   /**
-   * Simple token estimation (roughly 4 characters per token)
+   * Simple token estimation (roughly 3.5 characters per token for better accuracy)
    * @param text - Text to estimate tokens for
    * @returns Estimated token count
    */
   private estimateTextTokens(text: string): number {
-    return Math.ceil(text.length / 4)
+    return Math.ceil(text.length / 3.5)
   }
 } 
