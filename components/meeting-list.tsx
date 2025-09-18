@@ -8,14 +8,11 @@ import { StaggerContainer, StaggerItem } from "@/components/ui/motion"
 interface MeetingListProps {
   meetings: Meeting[]
   emptyMessage?: string
-  /** Base path for meeting detail links (unused) */
-  linkBasePath?: string
 }
 
 export function MeetingList({
   meetings,
   emptyMessage = "No meetings found",
-  linkBasePath = "/meetings",
 }: MeetingListProps) {
   if (!meetings.length) {
     return (
