@@ -2,7 +2,7 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import type { Meeting, MeetingNote } from '@/lib/types'
+import type { Meeting, MeetingNote, QnAEntry } from '@/lib/types'
 import { MeetingNotesService } from '@/lib/meeting-notes'
 import { MeetingsService } from '@/lib/meetings'
 import { revalidatePath, revalidateTag } from 'next/cache'
@@ -250,4 +250,31 @@ export async function deleteNote(noteId: number): Promise<{ success: true }> {
   await notesSvc.delete(noteId)
   revalidatePath('/')
   return { success: true }
+}
+
+/**
+ * Ask a question and get an AI response
+ * Creates a new Q&A entry in the database
+ */
+export async function askQuestion(question: string, meetingId: number): Promise<QnAEntry> {
+  const supabase = await createSupabaseServer()
+  
+  // For now, create a mock AI response
+  // In a real implementation, you would call OpenAI API here
+  const gpt4_response = `This is a placeholder response for: "${question}". In a production environment, this would be replaced with actual AI integration.`
+  
+  // Insert the Q&A entry into the database
+  const { data, error } = await supabase
+    .from('qna_entries')
+    .insert({
+      meeting_id: meetingId,
+      term_or_question: question,
+      gpt4_response
+    })
+    .select()
+    .single()
+  
+  if (error) throw error
+  
+  return data as QnAEntry
 }
