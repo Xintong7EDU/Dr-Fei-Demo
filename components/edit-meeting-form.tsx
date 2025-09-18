@@ -34,7 +34,7 @@ export function EditMeetingForm({ meeting }: EditMeetingFormProps) {
         topic_overview: topic,
       })
       toast({ title: "Meeting updated" })
-      router.push(`/meetings/${meeting.meeting_id}`)
+      router.push(`/`)
     } catch {
       toast({ title: "Error updating meeting", variant: "destructive" })
     } finally {

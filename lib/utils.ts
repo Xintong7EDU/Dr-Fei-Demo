@@ -5,6 +5,50 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// Default title for new notes when user doesn't provide one
+export const DEFAULT_NOTE_TITLE = 'TPE&SF Sync Meeting'
+
+// HTML sanitization and beautification utilities for notes
+import sanitizeHtml from 'sanitize-html'
+import { html as beautifyHtml } from 'js-beautify'
+
+/**
+ * Sanitize pasted HTML (e.g., from Google Docs) and beautify for storage.
+ * Strips dangerous tags/attrs and normalizes markup.
+ */
+export const sanitizeAndBeautifyHtml = (dirtyHtml: string): string => {
+  if (!dirtyHtml) return ''
+
+  const clean = sanitizeHtml(dirtyHtml, {
+    allowedTags: [
+      'p','br','div','span','strong','em','b','i','u','s','blockquote','pre','code','ul','ol','li','hr',
+      'h1','h2','h3','h4','h5','h6','table','thead','tbody','tr','th','td','img','figure','figcaption','a'
+    ],
+    allowedAttributes: {
+      a: ['href', 'name', 'target', 'rel'],
+      img: ['src', 'alt', 'title', 'width', 'height'],
+      '*': ['style']
+    },
+    allowedSchemesByTag: { a: ['http', 'https', 'mailto'] },
+    // keep spans to preserve inline styles; we'll allow a safe subset of styles
+    allowedStyles: {
+      '*': {
+        'text-align': [/^left$|^right$|^center$|^justify$/],
+        'font-weight': [/^bold$|^bolder$|^lighter$|^\d{3}$/],
+        'font-style': [/^italic$|^normal$/],
+        'text-decoration': [/^none$|^underline$|^line-through$/],
+      },
+    },
+    nonTextTags: ['style', 'script', 'textarea', 'option'],
+  })
+
+  return beautifyHtml(clean, {
+    indent_size: 2,
+    wrap_line_length: 120,
+    preserve_newlines: true,
+  })
+}
+
 /**
  * PST timezone identifier
  */
