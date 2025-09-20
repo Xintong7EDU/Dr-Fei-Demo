@@ -163,15 +163,7 @@ export function formatTimeRange(startTime: string, endTime: string): string {
   return `${formatSingleTime(startTime)} - ${formatSingleTime(endTime)} PST`;
 }
 
-/**
- * Check if a meeting date is in the past relative to PST timezone
- * @param meetingDate - Meeting date string in YYYY-MM-DD format
- * @returns True if the meeting date is in the past in PST
- */
-export function isPastMeetingPST(meetingDate: string): boolean {
-  const today = getCurrentDateStringPST()
-  return meetingDate < today
-}
+// Meeting-related utility functions removed
 
 /**
  * Format a date for month filter display in PST

@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
+import { createServerClient } from "@supabase/ssr"
 import { MainNav } from "@/components/main-nav"
 // removed unused Card imports
 import { NoteComposer } from "@/components/note-composer"
@@ -11,6 +14,31 @@ import {
 } from "@/components/ui/motion"
 
 export default async function Home() {
+  // Check authentication
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookies) {
+          cookies.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  const { data: { session } } = await supabase.auth.getSession()
+
+  if (!session) {
+    redirect('/login')
+  }
+
   const notes = await listNotes(20)
 
   return (
@@ -49,31 +77,6 @@ export default async function Home() {
           {/* Client composer */}
           <NoteComposer />
           <NoteListClient initialNotes={notes} emptyMessage="No notes yet. Paste your first HTML note here." />
-        </SlideUp>
-
-        {/* Recent Meetings Section removed */}
-
-        {/* Getting Started Section */}
-        <SlideUp delay={0.5} className="mt-12 p-6 bg-muted/50 rounded-lg">
-          <h3 className="text-lg font-semibold mb-3">Getting Started</h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="p-3 rounded-md hover:bg-background/50 transition-colors">
-              <h4 className="font-medium mb-2">📅 Schedule Meetings</h4>
-              <p className="text-sm text-muted-foreground">
-                Create and organize your meeting sessions with detailed topics and time slots.
-              </p>
-            </div>
-            <div className="p-3 rounded-md hover:bg-background/50 transition-colors">
-              <h4 className="font-medium mb-2">🔍 Search & Reference</h4>
-              <p className="text-sm text-muted-foreground">Quickly find past meeting records.</p>
-            </div>
-            <div className="p-3 rounded-md hover:bg-background/50 transition-colors">
-              <h4 className="font-medium mb-2">📊 Track Progress</h4>
-              <p className="text-sm text-muted-foreground">
-                Monitor meeting outcomes and follow up on action items effectively.
-              </p>
-            </div>
-          </div>
         </SlideUp>
       </main>
     </div>

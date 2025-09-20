@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import type { Session } from "@supabase/auth-js"
 import { cn } from "@/lib/utils"
-import { CalendarIcon, BarChart } from "lucide-react"
+import { CalendarIcon, BarChart, MessageSquare } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -39,6 +39,11 @@ export function MainNav() {
       name: "Dashboard",
       href: "/",
       icon: CalendarIcon,
+    },
+    {
+      name: "Chat",
+      href: "/chat",
+      icon: MessageSquare,
     },
     {
       name: "Stocks",
